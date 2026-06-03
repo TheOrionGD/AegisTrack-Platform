@@ -1,21 +1,21 @@
 openapi: 3.0.3
 info:
-  title: MTS CORE TRACKER - Mission Telemetry System API
+  title: AegisTrack - Mission Telemetry System API
   description: |
     Enterprise-grade API for real-time asset tracking, geofencing, and AI-driven tactical analysis.
-    This API powers the MTS Glassmorphism Dashboard and the JavaFX Tactical Client.
+    This API powers the AegisTrack Glassmorphism Dashboard and the JavaFX Tactical Client.
     
     ### Security Layers:
     1. **JWT Authentication**: Most endpoints require a Bearer Token issued via `/auth/login`.
     2. **API Keys**: Telemetry ingestion from hardware nodes requires an `X-API-KEY`.
   version: 4.0.0
   contact:
-    name: MTS Command Core
+    name: AegisTrack Command Core
     url: https://github.com/OrionGD/GD-s-Mobile-Tracking-System
 servers:
   - url: http://localhost:5000
     description: Local Development Server
-  - url: https://mts-core-api.herokuapp.com
+  - url: https://aegistrack-core-api.herokuapp.com
     description: Production Environment
 
 components:

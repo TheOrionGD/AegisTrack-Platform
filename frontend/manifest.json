@@ -1,7 +1,7 @@
 {
-  "short_name": "MTS Tracker",
-  "name": "MTS Core Consent Tracker",
-  "description": "Mobile Tracking System (MTS) Core Consent Tracker and Location Service.",
+  "short_name": "AegisTrack",
+  "name": "AegisTrack Core Consent Tracker",
+  "description": "AegisTrack Core Consent Tracker and Location Service.",
   "icons": [
     {
       "src": "/favicon.png",

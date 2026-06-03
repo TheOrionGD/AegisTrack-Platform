@@ -76,11 +76,11 @@ let forceCheckTimer = null;           // interval for operator force-location po
 window.addEventListener('DOMContentLoaded', () => {
     // Check if we need to resolve token from storage (e.g. when launching from home screen PWA)
     if (!token) {
-        token = localStorage.getItem('mts_token');
+        token = localStorage.getItem('aegistrack_token');
         if (token) {
-            registeredDeviceId = localStorage.getItem('mts_device_id');
+            registeredDeviceId = localStorage.getItem('aegistrack_device_id');
             isStoredSession = true;
-            console.log('[MTS PWA] Restoring session from localStorage token.');
+            console.log('[AegisTrack PWA] Restoring session from localStorage token.');
         }
     }
 
@@ -140,8 +140,8 @@ window.addEventListener('DOMContentLoaded', () => {
     // Register Service Worker for PWA support
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('../sw.js', { scope: '/' })
-            .then((reg) => console.log('MTS Service Worker Registered. Scope:', reg.scope))
-            .catch((err) => console.warn('MTS Service Worker Registration failed:', err));
+            .then((reg) => console.log('AegisTrack Service Worker Registered. Scope:', reg.scope))
+            .catch((err) => console.warn('AegisTrack Service Worker Registration failed:', err));
     }
 
     // Bind custom PWA install prompt button
@@ -153,7 +153,7 @@ window.addEventListener('DOMContentLoaded', () => {
             deferredPrompt.prompt();
             // Wait for the user to respond to the prompt
             const { outcome } = await deferredPrompt.userChoice;
-            console.log(`[MTS PWA] User response to the install prompt: ${outcome}`);
+            console.log(`[AegisTrack PWA] User response to the install prompt: ${outcome}`);
             deferredPrompt = null;
             // Disable button
             installPwaBtn.disabled = true;
@@ -358,9 +358,9 @@ async function registerDevice() {
             console.log('Registration Response', data);
 
             // Persist registration details for standalone PWA launch
-            localStorage.setItem('mts_token', token);
-            localStorage.setItem('mts_device_id', registeredDeviceId);
-            localStorage.setItem('mts_registered_data', JSON.stringify(data));
+            localStorage.setItem('aegistrack_token', token);
+            localStorage.setItem('aegistrack_device_id', registeredDeviceId);
+            localStorage.setItem('aegistrack_registered_data', JSON.stringify(data));
 
             showRegistrationCompleted(data);
 
@@ -461,7 +461,7 @@ function handlePermissionPrompt() {
     const descEl = gpsCard ? gpsCard.querySelector('p') : null;
     if (descEl) {
         descEl.style.whiteSpace = 'pre-line';
-        descEl.textContent = "MTS Core Tracker requires location access\nto activate live monitoring.\n\nPlease allow location access when prompted.";
+        descEl.textContent = "AegisTrack requires location access\nto activate live monitoring.\n\nPlease allow location access when prompted.";
     }
 
     const allowBtn = document.getElementById('allowLocationBtn');
@@ -505,7 +505,7 @@ function acquireInitialLocation() {
     const descEl = gpsCard ? gpsCard.querySelector('p') : null;
     if (descEl) {
         descEl.style.whiteSpace = 'pre-line';
-        descEl.textContent = "MTS Core Tracker is requesting device location...\nPlease check your browser's prompt to allow geolocation access.";
+        descEl.textContent = "AegisTrack is requesting device location...\nPlease check your browser's prompt to allow geolocation access.";
     }
 
     const allowBtn = document.getElementById('allowLocationBtn');
@@ -809,12 +809,12 @@ function startForceLocationPolling() {
                     );
                 }, LOCATION_UPDATE_INTERVAL_MS);
                 updateIntervalDisplay();
-                console.log(`[MTS] Update interval changed to ${LOCATION_UPDATE_INTERVAL_MS}ms by operator.`);
+                console.log(`[AegisTrack] Update interval changed to ${LOCATION_UPDATE_INTERVAL_MS}ms by operator.`);
             }
 
             // Operator requested immediate location
             if (data.force) {
-                console.log('[MTS] Force location request received from operator. Sending GPS now...');
+                console.log('[AegisTrack] Force location request received from operator. Sending GPS now...');
                 navigator.geolocation.getCurrentPosition(
                     (position) => sendLocationUpdate(position),
                     () => {},
@@ -823,7 +823,7 @@ function startForceLocationPolling() {
             }
         } catch (err) {
             // Silent: don't interrupt tracking on poll failure
-            console.warn('[MTS] Force-check poll failed:', err.message);
+            console.warn('[AegisTrack] Force-check poll failed:', err.message);
         }
     }, FORCE_CHECK_INTERVAL_MS);
 }
@@ -859,9 +859,9 @@ async function revokeConsent() {
         const data = await response.json();
         if (response.ok) {
             // Clear local storage tracking state
-            localStorage.removeItem('mts_token');
-            localStorage.removeItem('mts_device_id');
-            localStorage.removeItem('mts_registered_data');
+            localStorage.removeItem('aegistrack_token');
+            localStorage.removeItem('aegistrack_device_id');
+            localStorage.removeItem('aegistrack_registered_data');
 
             if (consentState) {
                 consentState.textContent = 'REVOKED';
@@ -969,15 +969,15 @@ async function validateStoredToken() {
         const response = await fetch(`${BACKEND_URL}/tracking-requests/${encodeURIComponent(token)}`);
         const data = await response.json();
         if (!response.ok) {
-            console.warn('[MTS PWA] Stored token is invalid or expired. Cleaning up.');
-            localStorage.removeItem('mts_token');
-            localStorage.removeItem('mts_device_id');
-            localStorage.removeItem('mts_registered_data');
+            console.warn('[AegisTrack PWA] Stored token is invalid or expired. Cleaning up.');
+            localStorage.removeItem('aegistrack_token');
+            localStorage.removeItem('aegistrack_device_id');
+            localStorage.removeItem('aegistrack_registered_data');
             renderInvalidLink(data.error || 'Your registration has expired or has been revoked.');
             return;
         }
         if (data.completed) {
-            console.log('[MTS PWA] Stored token validated. Activating tracking dashboard.');
+            console.log('[AegisTrack PWA] Stored token validated. Activating tracking dashboard.');
             showRegistrationCompleted(data);
             if (revokeBtn) revokeBtn.classList.remove('hidden');
             if (confirmBtn) confirmBtn.classList.add('hidden');
@@ -986,15 +986,15 @@ async function validateStoredToken() {
             checkGeolocationPermission();
             checkPwaInstallationState();
         } else {
-            console.warn('[MTS PWA] Consent request not completed. Restarting enrollment wizard.');
-            localStorage.removeItem('mts_token');
-            localStorage.removeItem('mts_device_id');
-            localStorage.removeItem('mts_registered_data');
+            console.warn('[AegisTrack PWA] Consent request not completed. Restarting enrollment wizard.');
+            localStorage.removeItem('aegistrack_token');
+            localStorage.removeItem('aegistrack_device_id');
+            localStorage.removeItem('aegistrack_registered_data');
             window.location.reload();
         }
     } catch (error) {
-        console.warn('[MTS PWA] Offline or backend unreachable, loading cached layout:', error.message);
-        const rawData = localStorage.getItem('mts_registered_data');
+        console.warn('[AegisTrack PWA] Offline or backend unreachable, loading cached layout:', error.message);
+        const rawData = localStorage.getItem('aegistrack_registered_data');
         if (rawData) {
             try {
                 const cachedData = JSON.parse(rawData);
@@ -1083,13 +1083,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     // Stash the event so it can be triggered later.
     deferredPrompt = e;
-    console.log('[MTS PWA] beforeinstallprompt event fired and stored.');
+    console.log('[AegisTrack PWA] beforeinstallprompt event fired and stored.');
     
     // Check and update buttons
     checkPwaInstallationState();
 });
 
 window.addEventListener('appinstalled', (evt) => {
-    console.log('[MTS PWA] App was installed successfully.');
+    console.log('[AegisTrack PWA] App was installed successfully.');
     showPwaInstalledState();
 });

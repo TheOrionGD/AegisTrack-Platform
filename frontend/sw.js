@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mts-tracker-v1';
+const CACHE_NAME = 'aegistrack-v1';
 const ASSETS = [
   '/pages/device-registration.html',
   '/css/device-registration.css',

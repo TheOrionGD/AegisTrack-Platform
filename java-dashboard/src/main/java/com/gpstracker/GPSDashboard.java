@@ -68,7 +68,7 @@ public class GPSDashboard extends Application {
         } catch (Exception e) {
             System.err.println("Error reading .env: " + e.getMessage());
         }
-        System.out.println("MTS CONFIGURATION LOADED:");
+        System.out.println("AegisTrack CONFIGURATION LOADED:");
         System.out.println("BACKEND_URL: " + BACKEND_URL);
         System.out.println("FRONTEND_URL: " + FRONTEND_URL);
     }
@@ -127,7 +127,7 @@ public class GPSDashboard extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("MTS // TACTICAL MONITOR");
+        primaryStage.setTitle("AegisTrack // TACTICAL MONITOR");
         
         BorderPane root = new BorderPane();
         root.getStyleClass().add("root");
@@ -185,7 +185,7 @@ public class GPSDashboard extends Application {
         sidebar.setPrefWidth(240);
         sidebar.setStyle("-fx-background-color: #07101a; -fx-border-color: rgba(0, 242, 255, 0.16); -fx-border-width: 0 1 0 0;");
 
-        Label logo = new Label("MTS CORE TRACKER");
+        Label logo = new Label("AegisTrack");
         logo.setStyle("-fx-text-fill: #00f2ff; -fx-font-size: 18px; -fx-font-weight: bold;");
         Label tagline = new Label("CDEAS | CONSENT AUTHORIZATION");
         tagline.setStyle("-fx-text-fill: #7a8a99; -fx-font-size: 10px; -fx-padding: 0 0 12 0;");

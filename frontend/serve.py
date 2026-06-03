@@ -8,7 +8,7 @@ if __name__ == '__main__':
     os.chdir(script_dir)
     
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
-    print(f"Starting multi-threaded MTS Frontend Server on port {port}...")
+    print(f"Starting multi-threaded AegisTrack Frontend Server on port {port}...")
     
     server = ThreadingHTTPServer(('0.0.0.0', port), SimpleHTTPRequestHandler)
     try:

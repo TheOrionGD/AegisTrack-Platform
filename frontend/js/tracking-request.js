@@ -131,7 +131,7 @@ function buildRegistrationUrl(token) {
 }
 
 function buildMessage(payload) {
-    return `MTS Consent Request:\n` +
+    return `AegisTrack Consent Request:\n` +
         `Owner: ${payload.owner_name}\n` +
         `Purpose: ${payload.tracking_purpose}\n` +
         `Duration: ${payload.tracking_duration}\n\n` +
@@ -344,7 +344,7 @@ async function sendTrackingLink() {
             const registrationUrlVal = responseObj.registrationUrl;
             const consentExpiry = data.consent_expiry_date || inputs.consentExpiry.value || '';
 
-            const messageText = `MTS CORE TRACKER
+            const messageText = `AegisTrack
 
 Device Monitoring Consent Request
 
@@ -379,7 +379,7 @@ Inside the portal you can:
 This request expires on: ${consentExpiry}
 Note: The registration link is active for 7 minutes only.
 
-MTS CORE TRACKER
+AegisTrack
 Consent-Based Device Enrollment System (CDEAS)
 
 Scan QR Code to access:
@@ -572,7 +572,7 @@ function openWhatsAppWeb() {
     const ownerName = lastRequest.owner_name || lastRequest.owner || '';
     const organization = lastRequest.organization_name || lastRequest.organization || '';
 
-    const message = `MTS CORE TRACKER
+    const message = `AegisTrack
 
 Device Monitoring Consent Request
 
@@ -600,7 +600,7 @@ function openWhatsAppApp() {
     const ownerName = lastRequest.owner_name || lastRequest.owner || '';
     const organization = lastRequest.organization_name || lastRequest.organization || '';
 
-    const message = `MTS CORE TRACKER
+    const message = `AegisTrack
 
 Device Monitoring Consent Request
 
@@ -642,11 +642,11 @@ function openGmailCompose() {
     // Set To email recipient from the user's new notify email field, defaulting to empty
     const toEmail = lastRequest.notify_email || '';
 
-    const message = `MTS CORE TRACKER
+    const message = `AegisTrack
 
 Device Monitoring Consent Request
 
-From: no-reply@mts.com
+From: no-reply@aegistrack.com
 To: ${toEmail}
 
 Hello ${ownerName},
@@ -680,13 +680,13 @@ Inside the portal you can:
 This request expires on: ${consentExpiry}
 Note: The registration link is active for 7 minutes only.
 
-MTS CORE TRACKER
+AegisTrack
 Consent-Based Device Enrollment System (CDEAS)
 
 Scan QR Code to access:
 ${BACKEND_URL}/tracking-requests/${lastRequest.token}/qr`.trim();
 
-    const subject = `MTS CORE TRACKER: Device Monitoring Consent Request`;
+    const subject = `AegisTrack: Device Monitoring Consent Request`;
 
     // Incorporate To and suggest From for Gmail
     const gmailUrl =
@@ -720,11 +720,11 @@ function openMailClient() {
     // Set To email recipient from the user's new notify email field, defaulting to empty
     const toEmail = lastRequest.notify_email || '';
 
-    const message = `MTS CORE TRACKER
+    const message = `AegisTrack
 
 Device Monitoring Consent Request
 
-From: no-reply@mts.com
+From: no-reply@aegistrack.com
 To: ${toEmail}
 
 Hello ${ownerName},
@@ -758,13 +758,13 @@ Inside the portal you can:
 This request expires on: ${consentExpiry}
 Note: The registration link is active for 7 minutes only.
 
-MTS CORE TRACKER
+AegisTrack
 Consent-Based Device Enrollment System (CDEAS)
 
 Scan QR Code to access:
 ${BACKEND_URL}/tracking-requests/${lastRequest.token}/qr`.trim();
 
-    const subject = `MTS CORE TRACKER: Device Monitoring Consent Request`;
+    const subject = `AegisTrack: Device Monitoring Consent Request`;
     const mailtoUrl = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
 
     window.location.href = mailtoUrl;
@@ -944,7 +944,7 @@ function copyRichEmailText() {
     const consentExpiry = lastRequest.consent_expiry_date || '';
     const registrationUrl = lastRequest.registration_url || lastRequest.registrationUrl;
 
-    const emailText = `MTS CORE TRACKER - Device Monitoring Authorization Request
+    const emailText = `AegisTrack - Device Monitoring Authorization Request
 
 Hello ${ownerName},
 
@@ -956,7 +956,7 @@ REQUEST DETAILS:
 • Organization: ${organization}
 • Purpose: ${purpose}
 • Duration: ${duration}
-• Requested By: MTS Operator
+• Requested By: AegisTrack Operator
 • Expires On: ${consentExpiry}
 
 Please review and respond by visiting the registration portal:
@@ -973,7 +973,7 @@ SECURITY NOTICE:
 Your privacy matters. Tracking will NOT begin automatically. Location monitoring only becomes active after you review and approve the request.
 
 ---
-MTS CORE TRACKER - Consent-Based Device Enrollment`;
+AegisTrack - Consent-Based Device Enrollment`;
 
     navigator.clipboard.writeText(emailText).then(() => {
         showToast('Formatted email text copied!', 'success');
@@ -998,7 +998,7 @@ async function sendDirectHtmlEmail() {
     }
     
     try {
-        const plainTextFallback = `MTS Device Enrollment Consent Request:\n\nHello ${lastRequest.owner_name || 'Owner'},\n\nA monitoring request has been generated. Please review and respond by visiting the registration portal:\n${lastRequest.registration_url || lastRequest.registrationUrl}`;
+        const plainTextFallback = `AegisTrack Device Enrollment Consent Request:\n\nHello ${lastRequest.owner_name || 'Owner'},\n\nA monitoring request has been generated. Please review and respond by visiting the registration portal:\n${lastRequest.registration_url || lastRequest.registrationUrl}`;
         
         // Write the rich-formatted HTML preview to the modern browser clipboard
         const htmlBlob = new Blob([lastRequest.html_preview], { type: 'text/html' });
@@ -1013,7 +1013,7 @@ async function sendDirectHtmlEmail() {
         
         showToast('HTML Email template copied! Opening Gmail...', 'success');
         
-        const subject = `MTS CORE TRACKER: Device Monitoring Consent Request`;
+        const subject = `AegisTrack: Device Monitoring Consent Request`;
         const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(toEmail)}&su=${encodeURIComponent(subject)}`;
         
         // Open Gmail Compose in a new tab
@@ -1027,11 +1027,11 @@ async function sendDirectHtmlEmail() {
         console.warn('Clipboard rich-text copy failed, falling back to plaintext content:', e.message);
         
         // Simple plain text fallback
-        const plainTextFallback = `MTS Device Enrollment Consent Request:\n\nHello ${lastRequest.owner_name || 'Owner'},\n\nPlease review and respond by visiting the registration portal:\n${lastRequest.registration_url || lastRequest.registrationUrl}`;
+        const plainTextFallback = `AegisTrack Device Enrollment Consent Request:\n\nHello ${lastRequest.owner_name || 'Owner'},\n\nPlease review and respond by visiting the registration portal:\n${lastRequest.registration_url || lastRequest.registrationUrl}`;
         
         navigator.clipboard.writeText(plainTextFallback).then(() => {
             showToast('Email text copied to clipboard! Opening Gmail...', 'info');
-            const subject = `MTS CORE TRACKER: Device Monitoring Consent Request`;
+            const subject = `AegisTrack: Device Monitoring Consent Request`;
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(toEmail)}&su=${encodeURIComponent(subject)}`;
             window.open(gmailUrl, '_blank');
             closeHtmlEmailPreview();

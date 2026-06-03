@@ -1,5 +1,5 @@
 /**
- * MTS AUTH INTERCEPTOR
+ * AegisTrack AUTH INTERCEPTOR
  * Global fetch wrapper to handle:
  * 1. Automatic header token injection from localStorage
  * 2. Silent JWT token refresh when receiving 401 Unauthorized
@@ -57,7 +57,7 @@
 
     // Global redirect or clean session cleanup on validation failure
     function handleAuthFailure() {
-        console.warn('[MTS Auth] Session expired and cannot be refreshed. Redirecting to login.');
+        console.warn('[AegisTrack Auth] Session expired and cannot be refreshed. Redirecting to login.');
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
 
@@ -123,7 +123,7 @@
 
         // 3. Handle 410 Gone (Link Expired) specifically for device portal verification
         if (response.status === 410 && urlString.includes('/tracking-requests/')) {
-            console.warn('[MTS Info] Link expired (410 Gone)');
+            console.warn('[AegisTrack Info] Link expired (410 Gone)');
             return response;
         }
 
@@ -144,7 +144,7 @@
 
             isRefreshing = true;
             try {
-                console.log('[MTS Auth] Access token expired. Executing silent session refresh…');
+                console.log('[AegisTrack Auth] Access token expired. Executing silent session refresh…');
                 const newAccessToken = await executeTokenRefresh();
                 isRefreshing = false;
 

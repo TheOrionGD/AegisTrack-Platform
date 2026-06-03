@@ -1,8 +1,4 @@
-/**
- * MTS CORE TRACKER — Live Monitor
- * Operator dashboard: auth guard, device list, Leaflet map,
- * WebSocket real-time updates, geofence management, force-location.
- */
+ * AegisTrack — Live Monitor
 
 'use strict';
 
@@ -259,7 +255,7 @@ async function fetchDevices(showLoader = false) {
         }
         renderDeviceList();
     } catch (err) {
-        console.warn('[MTS Monitor] fetchDevices error:', err.message);
+        console.warn('[AegisTrack Monitor] fetchDevices error:', err.message);
     }
 }
 
@@ -373,7 +369,7 @@ async function fetchDeviceLocations() {
             map.fitBounds(group.getBounds().pad(0.1));
         }
     } catch (err) {
-        console.warn('[MTS Monitor] fetchDeviceLocations error:', err.message);
+        console.warn('[AegisTrack Monitor] fetchDeviceLocations error:', err.message);
     }
 }
 
@@ -936,7 +932,7 @@ function disconnectWebSocket() {
 function setWsStatus(text, cls, detail = '') {
     wsStatusBadge.className = `ws-badge ${cls}`;
     wsStatusText.textContent = text;
-    wsStatusBadge.title = detail || `MTS WebSocket Status: ${text}`;
+    wsStatusBadge.title = detail || `AegisTrack WebSocket Status: ${text}`;
 }
 
 function handleWsEvent(event, payload) {

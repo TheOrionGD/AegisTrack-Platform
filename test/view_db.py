@@ -31,7 +31,7 @@ try:
     ]
     
     print("="*60)
-    print(f"MTS DATABASE EXPLORER - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"AegisTrack DATABASE EXPLORER - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*60)
 
     for collection_name in collections:

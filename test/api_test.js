@@ -1,6 +1,6 @@
 /**
- * MTS // API_KERNEL_DIAGNOSTICS
- * Run this in your browser console (F12) while on any page of the MTS dashboard,
+ * AegisTrack // API_KERNEL_DIAGNOSTICS
+ * Run this in your browser console (F12) while on any page of the AegisTrack dashboard,
  * or create a temporary .html file with this code inside <script> tags.
  */
 
@@ -12,7 +12,7 @@ const TEST_CONFIG = {
 };
 
 async function runDiagnostics() {
-    console.log('%c INITIALIZING MTS API DIAGNOSTICS... ', 'background: #00f2ff; color: #000; font-weight: bold;');
+    console.log('%c INITIALIZING AegisTrack API DIAGNOSTICS... ', 'background: #00f2ff; color: #000; font-weight: bold;');
     
     let token = '';
     let apiKey = '';
