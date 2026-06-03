@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTS CDEAS — Tracking Request Portal</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/tracking-request.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        referrerpolicy="no-referrer" />
+</head>
+
+<body class="theme-shell">
+    <div class="page-shell">
+        <header class="hero-bar">
+            <div>
+                <p class="eyebrow">MTS CORE TRACKER</p>
+                <h1>Consent-Based Device Enrollment</h1>
+                <p class="hero-copy">Generate secure consent requests and manage authorization workflows with
+                    operator-grade visibility.</p>
+            </div>
+            <div class="hero-actions">
+                <span class="status-pill">MODULE: CDEAS</span>
+                <span class="status-pill status-green">SECURE</span>
+                <a id="liveMonitorLink" href="live-monitor.html" class="btn-small hidden" target="_blank"
+                    style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                    <i class="fa-solid fa-satellite-dish"></i> Live Monitor
+                </a>
+                <div class="operator-auth">
+                    <input id="operatorUsername" type="text" placeholder="Operator username" />
+                    <input id="operatorPassword" type="password" placeholder="Access code" />
+                    <button id="operatorLoginBtn" class="btn-small">Login</button>
+                    <button id="operatorLogoutBtn" class="btn-small btn-ghost hidden">Logout</button>
+                    <span id="operatorStatus" class="auth-status">Not signed in</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="layout-grid">
+            <section class="panel form-panel">
+                <div class="panel-header">
+                    <h2>Tracking Request Management</h2><button type="button" class="close-btn" aria-label="Close"><i
+                            class="fa-solid fa-times"></i></button>
+                </div>
+                <div class="panel-body">
+                    <form id="trackingRequestForm">
+                        <div class="wizard-step" data-step="1" id="formStep">
+                            <div class="field-grid">
+                                <label>Mobile Number<input id="phoneNumber" type="tel" placeholder="+91xxxxxxxxxx"
+                                        required></label>
+                                <label>Device Owner Name<input id="ownerName" type="text" placeholder="Owner name"
+                                        required></label>
+                                <label>Organization Name<input id="organizationName" type="text"
+                                        placeholder="Organization" required></label>
+                                <label>Tracking Purpose<input id="trackingPurpose" type="text"
+                                        placeholder="E.g. Safety monitoring" required></label>
+                                <label>Tracking Duration<input id="trackingDuration" type="text" placeholder="30 days"
+                                        required></label>
+                                <label>Consent Expiry Date<input id="consentExpiry" type="date" required></label>
+                                <label>Notification Email (Recipient)<input id="notifyEmail" type="email"
+                                        placeholder="godfrey.prof@gmail.com"></label>
+                            </div>
+                        </div>
+                        <div class="tracking-flow">
+                            <div class="flow-step active" id="stepIndicator1">
+                                <span class="step-number">1</span>
+                                <div>
+                                    <strong>Build request</strong>
+                                    <p>Enter owner details and intent.</p>
+                                </div>
+                            </div>
+                            <div class="flow-step" id="stepIndicator2">
+                                <span class="step-number">2</span>
+                                <div>
+                                    <strong>Generate link</strong>
+                                    <p>Create secure consent access.</p>
+                                </div>
+                            </div>
+                            <div class="flow-step" id="stepIndicator3">
+                                <span class="step-number">3</span>
+                                <div>
+                                    <strong>Deliver</strong>
+                                    <p>Send through WhatsApp, email, or QR.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="button-row wizard-footer">
+                            <button type="button" id="prevBtn" class="btn-secondary hidden"><i
+                                    class="fa-solid fa-angle-left"></i> Back</button>
+                            <button type="button" id="previewBtn" class="btn-secondary"><i
+                                    class="fa-solid fa-arrow-right"></i> Continue</button>
+                            <button type="button" id="sendBtn" class="btn-primary hidden"><i
+                                    class="fa-solid fa-paper-plane"></i> Send Registration Link</button>
+                            <button type="button" id="cancelBtn" class="btn-ghost">Cancel Request</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="panel info-panel">
+                <div class="panel-header">
+                    <h2>Request Breakdown</h2><button type="button" class="close-btn" aria-label="Close"><i
+                            class="fa-solid fa-times"></i></button>
+                </div>
+                <div class="panel-body">
+                    <div class="info-row"><span>Secure Token</span><code id="requestToken">--</code></div>
+                    <div class="info-row"><span>Registration URL</span><code id="registrationUrl">--</code></div>
+                    <div class="info-row"><span>Delivery Mode</span><strong id="smsStatus">pending</strong></div>
+                </div>
+            </section>
+
+            <section class="panel action-panel hidden" id="deliveryActionsPanel">
+                <div class="panel-header">
+                    <h2>Delivery Options</h2><button type="button" class="close-btn" aria-label="Close"><i
+                            class="fa-solid fa-times"></i></button>
+                </div>
+                <div class="panel-body">
+                    <div class="button-row">
+                        <button type="button" id="whatsappWebBtn" class="btn-secondary">Send via WhatsApp Web</button>
+                        <button type="button" id="previewHtmlEmailBtn" class="btn-primary"
+                            style="background-color: #0A66C2;"><i class="fa-solid fa-envelope"></i> Preview HTML
+                            Email</button>
+                    </div>
+                    <div class="info-row"><span>Message Preview</span></div>
+                    <pre id="deliveryPreviewText" class="log-box">--</pre>
+                    <div class="qr-section">
+                        <span id="qr-display-text">Scan this QR code to access the consent portal.</span>
+                        <div id="qr-container"
+                            style="margin-top: 10px; display: flex; justify-content: center; background: rgb(203, 57, 57); padding: 10px; border-radius: 12px; width: max-content; margin-inline: auto;">
+                        </div>
+                        <img id="qrCodeImage" alt="QR code for consent link" class="qr-preview hidden" src="" />
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel review-panel hidden wizard-step" data-step="2" id="reviewStep">
+                <div class="panel-header">
+                    <h2>Review Request</h2>
+                </div>
+                <div class="panel-body">
+                    <div id="reviewSummary" class="review-card">Complete the form and continue to review the tracking
+                        request details.</div>
+                </div>
+            </section>
+
+            <section class="panel audit-panel">
+                <div class="panel-header">
+                    <h2>Operator Audit</h2>
+                </div>
+                <div class="panel-body">
+                    <div id="auditLog" class="log-box">Ready to generate a secure link. All transactions will be logged.
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="smsPreviewModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">Consent Request Preview</h3>
+                <button class="close-button" id="closePreview"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-content">
+                <pre id="smsPreviewText"></pre>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="copySmsBtn"><i class="fa-solid fa-copy"></i> Copy Message</button>
+                <button class="btn-primary" id="sendPreviewBtn"><i class="fa-solid fa-paper-plane"></i> Confirm &
+                    Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="htmlEmailPreviewModal" class="modal hidden" role="dialog" aria-modal="true"
+        aria-labelledby="htmlModalTitle">
+        <div class="modal-card modal-large" style="max-width: 800px; width: 95%;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; flex-direction: column; text-align: left;">
+                    <h3 id="htmlModalTitle" style="margin: 0; font-size: 1.25rem;">Consent HTML Email Preview</h3>
+                    <p style="margin: 3px 0 0 0; font-size: 11px; color: #a0aec0;">Enterprise-grade LinkedIn-style HTML
+                        notification</p>
+                </div>
+                <div class="preview-controls" style="display: flex; gap: 8px; margin-inline: auto 15px;">
+                    <button type="button" id="btnPreviewDesktop" class="btn-small active"
+                        style="padding: 6px 12px; font-size: 12px;" title="Desktop view"><i
+                            class="fa-solid fa-desktop"></i> Desktop</button>
+                    <button type="button" id="btnPreviewMobile" class="btn-small"
+                        style="padding: 6px 12px; font-size: 12px;" title="Mobile view"><i
+                            class="fa-solid fa-mobile-screen-button"></i> Mobile</button>
+                </div>
+                <button class="close-button" id="closeHtmlPreview" aria-label="Close"
+                    style="background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #a0aec0;"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-content"
+                style="padding: 0; background: #e2e8f0; height: 500px; display: flex; justify-content: center; align-items: center; overflow: hidden; border-radius: 0;">
+                <iframe id="htmlEmailFrame" sandbox="allow-same-origin"
+                    style="width: 100%; height: 100%; border: none; background: #f3f6f8; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 100%; margin: 0 auto;"></iframe>
+            </div>
+            <div class="modal-actions"
+                style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-top: 1px solid #2d3748; background: #1a202c; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; gap: 15px; flex-wrap: wrap;">
+                <div class="smtp-status-indicator"
+                    style="font-size: 13px; color: #a0aec0; display: flex; align-items: center; gap: 8px;">
+                    <span id="smtpDot"
+                        style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #e53e3e;"></span>
+                    <span id="smtpText">SMTP config unconfigured</span>
+                </div>
+                <div class="action-buttons-group" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="btn-secondary" id="copyRawHtmlBtn" style="font-size: 13px;"><i
+                            class="fa-solid fa-code"></i> Copy HTML</button>
+                    <button type="button" class="btn-secondary" id="copyRichTextBtn" style="font-size: 13px;"><i
+                            class="fa-solid fa-copy"></i> Copy Email Text</button>
+                    <button type="button" class="btn-primary" id="sendDirectHtmlBtn"
+                        style="background-color: #0A66C2; border-color: #0A66C2; font-weight: 600; font-size: 13px;"><i
+                            class="fa-solid fa-paper-plane"></i> Send Direct Email</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/auth-interceptor.js"></script>
+    <script src="../js/tracking-request.js"></script>
+</body>
+
+</html>

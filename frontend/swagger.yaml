@@ -1,0 +1,356 @@
+openapi: 3.0.3
+info:
+  title: MTS CORE TRACKER - Mission Telemetry System API
+  description: |
+    Enterprise-grade API for real-time asset tracking, geofencing, and AI-driven tactical analysis.
+    This API powers the MTS Glassmorphism Dashboard and the JavaFX Tactical Client.
+    
+    ### Security Layers:
+    1. **JWT Authentication**: Most endpoints require a Bearer Token issued via `/auth/login`.
+    2. **API Keys**: Telemetry ingestion from hardware nodes requires an `X-API-KEY`.
+  version: 4.0.0
+  contact:
+    name: MTS Command Core
+    url: https://github.com/OrionGD/GD-s-Mobile-Tracking-System
+servers:
+  - url: http://localhost:5000
+    description: Local Development Server
+  - url: https://mts-core-api.herokuapp.com
+    description: Production Environment
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+
+  schemas:
+    User:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: operator_01
+        password:
+          type: string
+          format: password
+          example: "********"
+    
+    Device:
+      type: object
+      properties:
+        device_id:
+          type: string
+          example: "NEXUS-7"
+        owner:
+          type: string
+          example: operator_01
+        api_key:
+          type: string
+          example: "qW2e3r4t5y6u7i8o9p0a1s2d3f4g5h6j"
+        latitude:
+          type: number
+          format: float
+          nullable: true
+        longitude:
+          type: number
+          format: float
+          nullable: true
+        accuracy:
+          type: number
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          nullable: true
+
+    LocationUpdate:
+      type: object
+      required:
+        - device_id
+        - latitude
+        - longitude
+        - accuracy
+        - timestamp
+      properties:
+        device_id:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        accuracy:
+          type: number
+        timestamp:
+          type: string
+          example: "2026-05-14T21:45:25Z"
+
+    Geofence:
+      type: object
+      required:
+        - device_id
+        - center_lat
+        - center_lng
+        - radius_meters
+      properties:
+        device_id:
+          type: string
+        center_lat:
+          type: number
+        center_lng:
+          type: number
+        radius_meters:
+          type: number
+        is_inside:
+          type: boolean
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: Registration successful
+        '409':
+          description: Username already exists
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate operator and issue JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  devices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+        '401':
+          description: Invalid credentials
+
+  /devices/register:
+    post:
+      tags:
+        - Device Management
+      summary: Register a new tracking node
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_id:
+                  type: string
+      responses:
+        '201':
+          description: Device registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+
+  /devices:
+    get:
+      tags:
+        - Device Management
+      summary: List all devices owned by operator
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of devices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+
+  /location:
+    post:
+      tags:
+        - Telemetry
+      summary: Ingest telemetry update
+      description: |
+        Primary ingestion endpoint. Requires a valid JWT or an X-API-KEY.
+        Triggers geofence validation and WebSocket broadcast.
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationUpdate'
+      responses:
+        '200':
+          description: Location updated successfully
+        '403':
+          description: Unauthorized device or API Key
+
+  /location/{device_id}:
+    get:
+      tags:
+        - Telemetry
+      summary: Get last known location for a specific node
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: device_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current device state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+
+  /geofence:
+    post:
+      tags:
+        - Management
+      summary: Configure spatial geofence
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Geofence'
+      responses:
+        '200':
+          description: Geofence configured
+
+  /alerts:
+    get:
+      tags:
+        - Monitoring
+      summary: Retrieve system alerts and breach events
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alerts:
+                    type: array
+                    items:
+                      type: object
+
+  /vault/{module}:
+    get:
+      tags:
+        - Vault
+      summary: Retrieve data from a specific vault module
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: module
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [analytics, threats, logs, files, operators, config]
+      responses:
+        '200':
+          description: Vault data retrieved
+    post:
+      tags:
+        - Vault
+      summary: Save data to a specific vault module
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: module
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [analytics, threats, logs, files, operators, config]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Data saved to vault
+
+  /proxy/groq:
+    post:
+      tags:
+        - Intelligence
+      summary: AI Neural Scan Proxy
+      security:
+        - bearerAuth: []
+      description: Proxy for Groq LLM API to perform tactical analysis.
+      responses:
+        '200':
+          description: AI analysis complete
+
+  /health:
+    get:
+      tags:
+        - System
+      summary: Service health check
+      responses:
+        '200':
+          description: System operational
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time

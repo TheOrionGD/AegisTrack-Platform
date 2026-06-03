@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTS CDEAS — Device Registration &amp; Consent</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="stylesheet" href="../css/device-registration.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer" />
+</head>
+<body class="device-shell">
+    <div class="device-container">
+        <header class="device-header">
+            <div>
+                <p class="eyebrow">MTS CONSENT PORTAL</p>
+                <h1>Device Registration &amp; Monitoring Consent</h1>
+                <p class="hero-copy">Review the agreement, verify your device details, and grant explicit tracking consent.</p>
+            </div>
+            <div class="header-chip">Secure Token: <span id="tokenBadge">—</span></div>
+        </header>
+
+        <div class="registration-stepper">
+            <div class="step active">
+                <span>1</span>
+                <div>
+                    <strong>Verify consent</strong>
+                    <p>Confirm the data collection agreement.</p>
+                </div>
+            </div>
+            <div class="step">
+                <span>2</span>
+                <div>
+                    <strong>Register device</strong>
+                    <p>Share device details and owner identity.</p>
+                </div>
+            </div>
+            <div class="step">
+                <span>3</span>
+                <div>
+                    <strong>Activate tracking</strong>
+                    <p>Complete consent and start monitoring.</p>
+                </div>
+            </div>
+        </div>
+
+        <section class="device-grid">
+            <!-- STEP 1: CONSENT -->
+            <div class="panel consent-panel wizard-step" data-step="1" id="consentStep">
+                <div class="panel-header"><h2>Device Monitoring Consent Agreement</h2><button type="button" class="close-btn" aria-label="Close"><i class="fa-solid fa-times"></i></button></div>
+                <div class="panel-body">
+                    <p class="callout">Tracking begins only after you accept. You may withdraw consent at any time.</p>
+                    <div class="consent-copy">
+                        <p><strong>What is collected:</strong> GPS coordinates, device status, timestamp, movement history.</p>
+                        <p><strong>Why tracking is required:</strong> Asset protection, safety monitoring, and incident response.</p>
+                        <p><strong>Data storage:</strong> Stored securely in encrypted vault logs and retained only as permitted by the policy.</p>
+                        <p><strong>Privacy rights:</strong> You may withdraw consent, review stored data, or request correction.</p>
+                    </div>
+                    <div class="consent-checklist">
+                        <label><input type="checkbox" id="policyCheckbox"> I have read the privacy policy</label>
+                        <label><input type="checkbox" id="monitorCheckbox"> I understand my location will be monitored</label>
+                        <label><input type="checkbox" id="consentCheckbox"> I voluntarily consent to tracking</label>
+                        <label><input type="checkbox" id="ownerCheckbox"> I am the lawful owner of this device</label>
+                    </div>
+                    <div class="button-row step-actions">
+                        <button type="button" id="nextToDetailsBtn" class="btn-primary" disabled><i class="fa-solid fa-arrow-right"></i> Continue to Device Info</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: REGISTRATION FORM -->
+            <div class="panel registration-panel wizard-step hidden" data-step="2" id="registrationStep">
+                <div class="panel-header"><h2>Device Registration</h2><button type="button" class="close-btn" aria-label="Close"><i class="fa-solid fa-times"></i></button></div>
+                <div class="panel-body">
+                    <form id="registrationForm">
+                        <label>Device Name<input id="deviceName" type="text" placeholder="My Phone" required></label>
+                        <label>Device Model<input id="deviceModel" type="text" placeholder="Pixel 8" required></label>
+                        <label>Operating System<input id="operatingSystem" type="text" placeholder="Android 15" required></label>
+                        <label>Device Identifier<input id="deviceIdentifier" type="text" placeholder="IMEI / UUID" required></label>
+                        <label>Owner Full Name<input id="ownerFullName" type="text" placeholder="Owner name" required></label>
+                        <label>Owner Mobile Number<input id="ownerMobileNumber" type="tel" placeholder="+91xxxxxxxxxx" required></label>
+                        <label>Create Password<input id="ownerPassword" type="password" placeholder="Choose a secure password" required></label>
+                        <label>Optional Contact Email<input id="contactEmail" type="email" placeholder="name@example.com"></label>
+                        <div class="button-row step-actions">
+                            <button type="button" id="backToConsentBtn" class="btn-secondary"><i class="fa-solid fa-angle-left"></i> Back to Consent</button>
+                            <button type="button" id="nextToConfirmBtn" class="btn-primary" disabled><i class="fa-solid fa-arrow-right"></i> Continue to Confirmation</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- STEP 3: REVIEW & CONFIRM -->
+            <div class="panel review-panel wizard-step hidden" data-step="3" id="confirmationStep">
+                <div class="panel-header"><h2>Confirm &amp; Activate</h2><button type="button" class="close-btn" aria-label="Close"><i class="fa-solid fa-times"></i></button></div>
+                <div class="panel-body">
+                    <div id="confirmSummary" class="review-card">Review the registration details, then complete consent and device activation.</div>
+                    <div class="button-row step-actions">
+                        <button type="button" id="backToDetailsFromConfirmBtn" class="btn-secondary"><i class="fa-solid fa-angle-left"></i> Back to Device Info</button>
+                        <button type="button" id="confirmBtn" class="btn-primary"><i class="fa-solid fa-check-circle"></i> Complete Registration</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: SUCCESS + GPS FLOW -->
+            <div class="panel success-panel wizard-step hidden" id="registrationSuccessStep">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-check-circle" style="color: #00ff88;"></i> Registration Completed</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="success-icon" style="font-size: 56px; color: #00ff88; margin-bottom: 12px; text-align:center;">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 style="color: #ffffff; font-size: 22px; margin: 0 0 10px; text-align:center;">Device Enrollment Completed</h3>
+                    <p style="color: #8da2bb; font-size: 14px; line-height: 1.6; text-align:center; margin: 0 0 20px;">
+                        Your device has been enrolled in the <strong>MTS Cybersecurity Core</strong>. Grant location permission below to activate live tracking.
+                    </p>
+
+                    <!-- Registration summary card -->
+                    <div class="review-card" style="background: rgba(0,242,255,0.03); border: 1px solid rgba(0,242,255,0.15); margin-bottom: 20px;">
+                        <p style="margin: 6px 0;"><strong>Owner Name:</strong> <span id="successOwnerName" style="color: #ffffff;">—</span></p>
+                        <p style="margin: 6px 0;"><strong>Device ID:</strong> <span id="successDeviceId" style="color: #ffffff;">—</span></p>
+                        <p style="margin: 6px 0;"><strong>Registration Time:</strong> <span id="successTimestamp" style="color: #ffffff;">—</span></p>
+                        <p style="margin: 6px 0;"><strong>Tracking Status:</strong> <span id="successTrackingStatus" style="color: #00ff88; font-weight: bold;">—</span></p>
+
+                        <!-- GPS Status Pill -->
+                        <div id="gpsStatusPill" style="display:inline-flex; align-items:center; gap:8px; margin-top:10px; padding:6px 14px; border-radius:999px; border:1px solid #ffbb33; background:rgba(255,187,51,0.08);">
+                            <span class="gps-dot" style="width:8px;height:8px;border-radius:50%;background:#ffbb33;display:inline-block;"></span>
+                            <span id="gpsStatusPillText" style="color:#ffbb33; font-size:0.82rem; font-weight:700;">AWAITING PERMISSION</span>
+                        </div>
+                    </div>
+
+                    <!-- PWA Standalone Mode active banner -->
+                    <div id="pwaStandaloneBadge" class="pwa-standalone-badge hidden">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        <span>Running in Standalone App Mode (PWA)</span>
+                    </div>
+
+                    <div class="tracking-pathways-container">
+                        <!-- PATHWAY 1: BROWSER GEOLOCATION -->
+                        <div class="tracking-pathway-card">
+                            <div class="pathway-header">
+                                <span class="pathway-badge">Option 1</span>
+                                <h3>Browser Geolocation</h3>
+                            </div>
+                            <p class="pathway-desc">Activate tracking instantly in the browser. Must keep this browser tab open to continue sending location updates.</p>
+
+                            <!-- ── GPS PERMISSION REQUEST CARD ── -->
+                            <div id="gpsPermissionCard" class="gps-permission-card hidden">
+                                <div class="gps-icon-ring">
+                                    <i class="fa-solid fa-location-crosshairs"></i>
+                                </div>
+                                <h4>Location Permission Required</h4>
+                                <p>MTS Core Tracker needs your device's location to activate live monitoring. Your coordinates are encrypted and only shared with your consent operator.</p>
+                                <ul class="gps-info-list" style="list-style: none; padding: 0; margin: 12px 0; text-align: left; font-size: 0.85rem; color: #8da2bb;">
+                                    <li style="margin: 6px 0;"><i class="fa-solid fa-shield-halved" style="color:#00ff88; margin-right:8px;"></i> Location data is encrypted in transit</li>
+                                    <li style="margin: 6px 0;"><i class="fa-solid fa-clock-rotate-left" style="color:#00ff88; margin-right:8px;"></i> Updates every 30 seconds</li>
+                                    <li style="margin: 6px 0;"><i class="fa-solid fa-ban" style="color:#00ff88; margin-right:8px;"></i> Stop anytime by revoking consent</li>
+                                </ul>
+                                <button type="button" id="allowLocationBtn" class="btn-primary gps-allow-btn" style="width: 100%;">
+                                    <i class="fa-solid fa-location-dot"></i> Allow Location Access
+                                </button>
+                                <p id="gpsStatusText" style="color:#8da2bb; font-size:0.8rem; margin:8px 0 0; text-align:center;"></p>
+                            </div>
+
+                            <!-- ── GPS PERMISSION DENIED / ERROR CARD ── -->
+                            <div id="gpsDeniedCard" class="gps-denied-card hidden">
+                                <div style="font-size: 40px; color: #ff6666; margin-bottom:12px;">
+                                    <i class="fa-solid fa-location-crosshairs-slash"></i>
+                                </div>
+                                <h4 style="color:#ff6666; margin:0 0 10px;">Location Access Denied</h4>
+                                <p id="gpsDeniedMessage" style="color:#8da2bb; font-size:0.9rem; line-height:1.6; margin:0 0 16px;">
+                                    Location permission was denied. Please allow location access in your browser settings.
+                                </p>
+                                <div style="background:rgba(255,187,51,0.08); border:1px solid rgba(255,187,51,0.25); border-radius:12px; padding:14px; margin-bottom:16px; font-size:0.82rem; color:#ffbb33; line-height:1.6; text-align: left;">
+                                    <strong>How to enable:</strong> Open browser settings → Site settings → Location → Allow for this page.
+                                </div>
+                                <button type="button" id="retryLocationBtn" class="btn-secondary" style="width:100%;">
+                                    <i class="fa-solid fa-rotate-right"></i> Try Again
+                                </button>
+                            </div>
+
+                            <!-- ── ACTIVE TRACKING CARD ── -->
+                            <div id="gpsActiveCard" class="gps-active-card hidden">
+                                <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                                    <div class="gps-pulse-dot"></div>
+                                    <span style="color:#00ff88; font-weight:700; font-size:0.95rem;">TRACKING ACTIVE</span>
+                                </div>
+                                <div class="live-coords-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px; text-align: left; background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
+                                    <div class="live-coord-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                                        <span class="coord-label" style="color: #8da2bb;"><i class="fa-solid fa-up-down"></i> Latitude</span>
+                                        <span id="liveLatitude" class="coord-value">—</span>
+                                    </div>
+                                    <div class="live-coord-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                                        <span class="coord-label" style="color: #8da2bb;"><i class="fa-solid fa-left-right"></i> Longitude</span>
+                                        <span id="liveLongitude" class="coord-value">—</span>
+                                    </div>
+                                    <div class="live-coord-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                                        <span class="coord-label" style="color: #8da2bb;"><i class="fa-solid fa-circle-dot"></i> Accuracy</span>
+                                        <span id="liveAccuracy" class="coord-value">—</span>
+                                    </div>
+                                    <div class="live-coord-row" style="display: flex; justify-content: space-between; padding-bottom: 2px;">
+                                        <span class="coord-label" style="color: #8da2bb;"><i class="fa-solid fa-clock"></i> Last Sent</span>
+                                        <span id="liveLastSent" class="coord-value">—</span>
+                                    </div>
+                                </div>
+                                 <p id="trackingIntervalDisplay" style="color:#8da2bb; font-size:0.78rem; margin:12px 0 0; text-align:center;">
+                                     Updating every 30 seconds. Keep this tab open to maintain tracking.
+                                 </p>
+                            </div>
+
+                            <!-- ── GEOFENCE BREACH BANNER ── -->
+                            <div id="geofenceBreachBanner" class="geofence-breach-banner hidden" style="background: rgba(255, 68, 68, 0.08); border: 1px solid rgba(255, 68, 68, 0.2); padding: 12px; border-radius: 12px; color: #ff6666; font-size: 0.85rem; text-align: center; margin-top: 10px;">
+                                <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i>
+                                <strong>GEOFENCE BREACH DETECTED</strong>
+                                <p style="margin: 4px 0 0;">Your device is outside the designated zone. The operator has been notified.</p>
+                            </div>
+                        </div>
+
+                        <!-- PATHWAY 2: PROGRESSIVE WEB APP -->
+                        <div class="tracking-pathway-card">
+                            <div class="pathway-header">
+                                <span class="pathway-badge primary">Option 2</span>
+                                <h3>Install Mobile App (PWA)</h3>
+                            </div>
+                            <p class="pathway-desc">Add MTS Core Tracker to your Home Screen. Runs in a dedicated standalone window and provides a more reliable tracking experience.</p>
+
+                            <!-- PWA Install Button Card (for Android / Chrome desktop / supported browsers) -->
+                            <div id="pwaInstallCard" class="pwa-install-card">
+                                <div class="pwa-icon-ring">
+                                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                                </div>
+                                <h4>App Installation Available</h4>
+                                <p style="font-size:0.85rem; color:#8da2bb; margin:0 0 10px;">Install the app directly on your mobile device for direct shortcut access.</p>
+                                <button type="button" id="installPwaBtn" class="btn-primary pwa-install-btn" disabled>
+                                    <i class="fa-solid fa-download"></i> Install MTS Tracker
+                                </button>
+                                <p id="pwaInstallStatus" style="color:#8da2bb; font-size:0.8rem; margin:8px 0 0; text-align:center;">Detecting app installation support...</p>
+                            </div>
+
+                            <!-- iOS Custom Share instructions card (fallback for iOS Safari) -->
+                            <div id="pwaIosInstructions" class="pwa-ios-card hidden">
+                                <div style="font-size: 28px; color: #00f2ff; margin-bottom: 8px;">
+                                    <i class="fa-solid fa-share-from-square"></i>
+                                </div>
+                                <h4 style="margin: 0 0 4px;">Install on iOS Safari</h4>
+                                <p style="font-size:0.82rem; line-height:1.5; color:#8da2bb; margin:0 0 10px; text-align: left;">Safari does not support automatic installation. Follow these steps:</p>
+                                <ol style="text-align:left; font-size:0.82rem; color:#edf7ff; margin:0; padding-left:20px; line-height:1.6;">
+                                    <li>Tap the <strong>Share</strong> button <i class="fa-solid fa-square-share-nodes"></i> in Safari.</li>
+                                    <li>Scroll down and select <strong>Add to Home Screen</strong>.</li>
+                                    <li>Tap <strong>Add</strong> in the top-right corner.</li>
+                                </ol>
+                            </div>
+
+                            <!-- PWA Already Installed/Standalone Active message -->
+                            <div id="pwaAlreadyInstalledCard" class="pwa-installed-card hidden">
+                                <div style="font-size: 32px; color: #00ff88; margin-bottom: 8px;">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                                <h4 style="color:#00ff88; margin: 0 0 6px;">App Mode Active</h4>
+                                <p style="font-size: 0.85rem; color: #8da2bb; margin: 0;">MTS Core Tracker is running inside standalone PWA mode. It has been successfully installed on your device.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="button-row" style="justify-content: center; margin-top: 16px;">
+                        <button type="button" id="revokeBtn" class="btn-secondary hidden" style="color: #ff6666; border-color: rgba(255,68,68,0.3);">
+                            <i class="fa-solid fa-ban"></i> Revoke Consent
+                        </button>
+                        <button type="button" id="doneBtn" class="btn-primary" style="min-width: 160px;">
+                            <i class="fa-solid fa-thumbs-up"></i> Done
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATUS PANEL (sidebar) -->
+            <aside class="panel status-panel">
+                <div class="panel-header"><h2>Registration Status</h2><button type="button" class="close-btn" aria-label="Close"><i class="fa-solid fa-times"></i></button></div>
+                <div class="panel-body">
+                    <div class="status-row"><span>Consent state</span><strong id="consentState">Pending</strong></div>
+                    <div class="status-row"><span>Device fingerprint</span><code id="fingerprintValue">—</code></div>
+                    <div class="status-row"><span>Browser info</span><code id="browserInfo">—</code></div>
+                    <div class="status-row"><span>IP address</span><code>Captured by server</code></div>
+                    <div class="status-row"><span>Registration timestamp</span><strong id="registeredAt">—</strong></div>
+                    <div id="messageBox" class="status-message">Please review the consent agreement and complete registration.</div>
+                </div>
+            </aside>
+        </section>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/device-registration.js"></script>
+</body>
+</html>

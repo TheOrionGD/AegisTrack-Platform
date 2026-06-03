@@ -1,0 +1,24 @@
+{
+  "short_name": "MTS Tracker",
+  "name": "MTS Core Consent Tracker",
+  "description": "Mobile Tracking System (MTS) Core Consent Tracker and Location Service.",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    }
+  ],
+  "start_url": "/pages/device-registration.html",
+  "background_color": "#0a0f14",
+  "theme_color": "#00ff88",
+  "display": "standalone",
+  "orientation": "portrait"
+}

@@ -1,0 +1,135 @@
+.root {
+    -fx-base: #05070a;
+    -fx-background-color: #05070a;
+    -fx-control-inner-background: #0d121c;
+}
+
+.label {
+    -fx-text-fill: #ffffff;
+    -fx-font-family: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+.panel-title {
+    -fx-text-fill: #00f2ff;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent transparent #00f2ff transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 0 5 0;
+}
+
+.cyber-panel {
+    -fx-background-color: rgba(13, 18, 28, 0.9);
+    -fx-border-color: rgba(0, 242, 255, 0.2);
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.button {
+    -fx-background-color: #00f2ff;
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #00d8e6;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 242, 255, 0.4), 10, 0, 0, 0);
+}
+
+.button-outline {
+    -fx-background-color: transparent;
+    -fx-border-color: #00f2ff;
+    -fx-text-fill: #00f2ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}
+
+.button-outline:hover {
+    -fx-background-color: rgba(0, 242, 255, 0.1);
+}
+
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+}
+
+.table-view .column-header, .table-view .column-header-background {
+    -fx-background-color: #0d121c;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #00f2ff;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #ffffff;
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.05) transparent;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(0, 242, 255, 0.2);
+}
+
+.list-view {
+    -fx-background-color: #0d121c;
+    -fx-border-color: rgba(0, 242, 255, 0.2);
+    -fx-text-fill: #ffffff;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+}
+
+.list-cell:selected {
+    -fx-background-color: #00f2ff;
+    -fx-text-fill: #000000;
+}
+
+.text-field {
+    -fx-background-color: #000000;
+    -fx-text-fill: #00f2ff;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-radius: 4;
+}
+
+.text-field:focused {
+    -fx-border-color: #00f2ff;
+}
+
+/* TACTICAL UI PSYCHOLOGY ADDITIONS */
+.data-label {
+    -fx-font-family: 'JetBrains Mono', 'Consolas', monospace;
+    -fx-font-size: 13px;
+    -fx-text-fill: #00f2ff;
+    -fx-opacity: 0.9;
+}
+
+.status-text {
+    -fx-font-size: 11px;
+    -fx-text-fill: #7a8a99;
+    -fx-font-weight: bold;
+    -fx-padding: 10 0 0 0;
+}
+
+.status-live {
+    -fx-text-fill: #00ff9d;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 255, 157, 0.3), 5, 0, 0, 0);
+}
+
+.cyber-panel {
+    -fx-background-color: linear-gradient(to bottom right, rgba(13, 18, 28, 0.95), rgba(5, 7, 10, 0.98));
+    -fx-border-color: rgba(0, 242, 255, 0.15);
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+/* Add a scanline effect feel to panels */
+.cyber-panel:after {
+    -fx-background-color: repeating-linear-gradient(rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(255,255,255,0.01) 3px, rgba(255,255,255,0.01) 4px);
+}

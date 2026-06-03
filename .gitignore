@@ -1,0 +1,81 @@
+# ==========================================
+# MTS CORE TRACKER - Production .gitignore
+# ==========================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.coverage
+htmlcov/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- Environment Secrets (CRITICAL) ---
+.env
+.env.local
+.env.*.local
+*.env
+backend/.env
+
+# --- Gemini & AI Assistant Cache ---
+.gemini/
+.gemini-workspace/
+antigravity-ide/
+
+# --- VS Code & IDEs ---
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+nbproject/
+
+# --- Node / JavaScript (Frontend Packages) ---
+node_modules/
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# --- Java (Dashboard & Backend Services) ---
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+build/
+
+# --- Operating System ---
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# --- Logs, Images & Databases ---
+*.log
+*.db
+*.sqlite
+*.sqlite-journal
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+# Exclude specific asset images if they are part of the source code, 
+# but keep temp/generated reports and analytics screenshots ignored.
+Old_Report.pdf
+Updated_Report.md
+live_monitor_dashboard_*.png
