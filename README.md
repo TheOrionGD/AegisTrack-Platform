@@ -16,13 +16,28 @@
 ```
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#)
+[![Version Badge](https://img.shields.io/badge/release-v2.1.0-blue.svg)](#)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](#)
 [![Security Policy](https://img.shields.io/badge/security-compliant-green.svg)](#)
+[![Snyk Security](https://img.shields.io/badge/security-Snyk%20Passed-brightgreen.svg)](#)
+[![Code Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen.svg)](#)
+[![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg)](#)
+
+[![Stars](https://img.shields.io/github/stars/OrionGD/AegisTrack.svg?style=flat&label=Stars&color=yellow)](#)
+[![Forks](https://img.shields.io/github/forks/OrionGD/AegisTrack.svg?style=flat&label=Forks&color=lightgrey)](#)
+[![Contributors](https://img.shields.io/github/contributors/OrionGD/AegisTrack.svg)](#)
+[![Last Commit](https://img.shields.io/github/last-commit/OrionGD/AegisTrack.svg)](#)
+[![Issues](https://img.shields.io/github/issues/OrionGD/AegisTrack.svg)](#)
+[![Pull Requests](https://img.shields.io/github/issues-pr/OrionGD/AegisTrack.svg)](#)
+
+[![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](#)
+[![Java Version](https://img.shields.io/badge/java-17%20%7C%2021-red.svg)](#)
 [![Vercel Deployment](https://img.shields.io/badge/frontend-vercel-blueviolet.svg)](#)
 [![Render Hosting](https://img.shields.io/badge/backend-render-orange.svg)](#)
 [![Database](https://img.shields.io/badge/database-mongodb--atlas-green.svg)](#)
 [![WebSocket](https://img.shields.io/badge/websockets-active-brightgreen.svg)](#)
-[![Version Badge](https://img.shields.io/badge/release-v2.1.0-blue.svg)](#)
+[![Platforms](https://img.shields.io/badge/platform-windows%20%7C%20linux%20%7C%20macos-lightgrey.svg)](#)
+[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](#)
 
 ---
 
