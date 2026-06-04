@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Communications</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/operator-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body>
+<div class="op-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+        <header class="topbar" id="topbar"></header>
+        <main class="main-content" style="padding:var(--space-5);overflow:hidden;display:flex;flex-direction:column;">
+            <div class="page-header" style="margin-bottom:var(--space-4);">
+                <h1>Communications</h1>
+                <p class="page-subtitle">Real-time operator ↔ device owner messaging</p>
+            </div>
+            <div class="comms-shell" style="flex:1;min-height:0;">
+                <!-- Thread List -->
+                <div class="thread-list">
+                    <div class="thread-list-header">
+                        <h3 style="font-size:var(--text-base);font-weight:700;">Conversations</h3>
+                        <div class="search-bar" style="margin-top:var(--space-3);">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" placeholder="Search owners…" id="threadSearch">
+                        </div>
+                    </div>
+                    <div class="thread-list-body" id="threadListBody">
+                        <div class="empty-state" style="padding:var(--space-8) var(--space-4);">
+                            <i class="fa-solid fa-comments"></i>
+                            <p>Loading conversations…</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Window -->
+                <div class="chat-window" id="chatWindow">
+                    <!-- No selection state -->
+                    <div id="noChatSelected" style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:var(--space-4);color:var(--text-muted);">
+                        <i class="fa-solid fa-comments" style="font-size:48px;opacity:0.3;"></i>
+                        <p style="font-size:var(--text-sm);">Select a conversation to start messaging</p>
+                    </div>
+
+                    <!-- Active chat -->
+                    <div id="activeChatArea" class="hidden" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+                        <div class="chat-topbar">
+                            <div class="thread-avatar" id="activeChatAvatar">?</div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-weight:700;font-size:var(--text-base);" id="activeChatName">Owner</div>
+                                <div style="font-size:var(--text-xs);color:var(--text-muted);" id="activeChatSub">Select a device thread below</div>
+                            </div>
+                            <div style="display:flex;gap:var(--space-2);">
+                                <button class="topbar-icon-btn" id="viewDeviceInfoBtn" title="Device info"><i class="fa-solid fa-info-circle"></i></button>
+                                <button class="topbar-icon-btn" title="Refresh messages" id="refreshMsgBtn"><i class="fa-solid fa-rotate-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Device Tabs -->
+                        <div id="deviceTabs" style="display:flex;gap:var(--space-2);padding:var(--space-2) var(--space-4);border-bottom:1px solid var(--border-soft);overflow-x:auto;flex-shrink:0;"></div>
+
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-message"></i>
+                                <p>No messages yet. Start the conversation.</p>
+                            </div>
+                        </div>
+
+                        <!-- Typing indicator -->
+                        <div id="typingIndicator" class="hidden" style="padding:0 var(--space-5);padding-bottom:var(--space-2);">
+                            <div class="typing-indicator">
+                                <div class="typing-dots"><span></span><span></span><span></span></div>
+                                <span id="typingText">Owner is typing…</span>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-bar">
+                            <textarea id="chatInput" placeholder="Type a message…" rows="1"></textarea>
+                            <button class="btn btn-primary btn-icon" id="sendMsgBtn" title="Send message">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Device Info Panel -->
+                <div class="device-info-panel" id="deviceInfoPanel">
+                    <div class="info-section">
+                        <div class="info-section-title">Device Information</div>
+                        <div id="deviceInfoContent">
+                            <div class="empty-state" style="padding:var(--space-6);"><i class="fa-solid fa-mobile-screen-button"></i><p>Select a device thread</p></div>
+                        </div>
+                    </div>
+                    <div class="info-section">
+                        <div class="info-section-title">Current Location</div>
+                        <div id="locationInfoContent">
+                            <div class="info-row"><span>Latitude</span><span id="infoLat">—</span></div>
+                            <div class="info-row"><span>Longitude</span><span id="infoLng">—</span></div>
+                            <div class="info-row"><span>Last Updated</span><span id="infoLastUpdate">—</span></div>
+                        </div>
+                    </div>
+                    <div class="info-section">
+                        <div class="info-section-title">Tracking Status</div>
+                        <div id="trackingInfoContent">
+                            <div class="info-row"><span>Status</span><span id="infoStatus"><span class="badge badge-muted">—</span></span></div>
+                            <div class="info-row"><span>Consent</span><span id="infoConsent">—</span></div>
+                        </div>
+                    </div>
+                    <div class="info-section" style="padding-top:var(--space-4);">
+                        <a href="live-monitor.html" class="btn btn-secondary btn-full btn-sm">
+                            <i class="fa-solid fa-map-location-dot"></i> View on Map
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/operator-portal.js"></script>
+<script>
+(async () => {
+    await initOperatorPortal('Communications');
+
+    let activeOwnerId   = null;
+    let activeDeviceId  = null;
+    let threads         = [];
+    let pollTimer       = null;
+
+    // ── Load Threads ──
+    async function loadThreads() {
+        const body = document.getElementById('threadListBody');
+        try {
+            const data = await AegisAPI.messages.threads();
+            threads = data.threads || data || [];
+
+            if (!threads.length) {
+                body.innerHTML = '<div class="empty-state" style="padding:var(--space-8) var(--space-4);"><i class="fa-solid fa-comments"></i><p>No conversations yet</p></div>';
+                return;
+            }
+
+            body.innerHTML = threads.map(t => {
+                const initials = getAvatarInitials(t.owner_name || t.ownerId || '?');
+                const unread = t.unread_count || 0;
+                return `
+                <div class="thread-item" data-owner="${t.ownerId || t.owner_id}" onclick="selectThread('${t.ownerId || t.owner_id}','${t.owner_name || ''}')">
+                    <div class="thread-avatar">${initials}</div>
+                    <div class="thread-info">
+                        <div class="thread-name">${t.owner_name || t.ownerId || '—'}</div>
+                        <div class="thread-preview">${t.last_message || 'No messages yet'}</div>
+                    </div>
+                    <div class="thread-meta">
+                        <div class="thread-time">${t.last_message_time ? timeAgo(t.last_message_time) : ''}</div>
+                        ${unread > 0 ? `<div class="thread-unread">${unread}</div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        } catch(e) {
+            // Fallback: try to load from device registrations
+            try {
+                const devData = await AegisAPI.get('/device-locations');
+                const locs = devData.locations || [];
+                if (!locs.length) { body.innerHTML = '<div class="empty-state" style="padding:var(--space-8) var(--space-4);"><i class="fa-solid fa-comments"></i><p>No enrolled owners</p></div>'; return; }
+                body.innerHTML = locs.map(l => {
+                    const initials = getAvatarInitials(l.owner_name || '?');
+                    return `<div class="thread-item" data-device="${l.device_id}" onclick="selectThread('${l.device_id}','${l.owner_name || l.device_id}')">
+                        <div class="thread-avatar">${initials}</div>
+                        <div class="thread-info">
+                            <div class="thread-name">${l.owner_name || l.device_id}</div>
+                            <div class="thread-preview">${l.device_id}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch { body.innerHTML = '<div class="empty-state" style="padding:var(--space-8) var(--space-4);"><i class="fa-solid fa-comments"></i><p>Unable to load threads</p></div>'; }
+        }
+    }
+
+    // ── Select Thread ──
+    window.selectThread = async function(ownerId, ownerName) {
+        activeOwnerId = ownerId;
+        document.querySelectorAll('.thread-item').forEach(el => el.classList.toggle('active', el.dataset.owner === ownerId || el.dataset.device === ownerId));
+
+        document.getElementById('noChatSelected').classList.add('hidden');
+        const active = document.getElementById('activeChatArea');
+        active.classList.remove('hidden');
+        active.style.display = 'flex';
+
+        document.getElementById('activeChatAvatar').textContent = getAvatarInitials(ownerName);
+        document.getElementById('activeChatName').textContent = ownerName;
+
+        // Load device tabs for this owner
+        await loadDeviceTabs(ownerId);
+        await loadMessages();
+        updateDeviceInfoPanel(ownerId);
+    };
+
+    async function loadDeviceTabs(ownerId) {
+        const tabsEl = document.getElementById('deviceTabs');
+        tabsEl.innerHTML = '';
+        try {
+            const data = await AegisAPI.get(`/owners/${ownerId}/devices`);
+            const devs = data.devices || [];
+            if (!devs.length) {
+                // Single device mode
+                const tab = document.createElement('button');
+                tab.className = 'btn btn-cyan btn-sm';
+                tab.textContent = ownerId;
+                tab.onclick = () => { activeDeviceId = ownerId; loadMessages(); };
+                tabsEl.appendChild(tab);
+                activeDeviceId = ownerId;
+            } else {
+                devs.forEach((d, i) => {
+                    const tab = document.createElement('button');
+                    tab.className = `btn btn-sm ${i === 0 ? 'btn-cyan' : 'btn-secondary'}`;
+                    tab.textContent = d.device_name || d.device_id;
+                    tab.dataset.deviceId = d.device_id;
+                    tab.onclick = () => {
+                        activeDeviceId = d.device_id;
+                        document.querySelectorAll('#deviceTabs button').forEach(b => {
+                            b.className = `btn btn-sm ${b.dataset.deviceId === d.device_id ? 'btn-cyan' : 'btn-secondary'}`;
+                        });
+                        document.getElementById('activeChatSub').textContent = d.device_name || d.device_id;
+                        loadMessages();
+                    };
+                    tabsEl.appendChild(tab);
+                    if (i === 0) { activeDeviceId = d.device_id; }
+                });
+            }
+        } catch {
+            activeDeviceId = ownerId;
+        }
+    }
+
+    async function loadMessages() {
+        const messagesEl = document.getElementById('chatMessages');
+        if (!activeDeviceId && !activeOwnerId) return;
+        const threadId = activeDeviceId || activeOwnerId;
+        try {
+            const data = await AegisAPI.messages.getThread(threadId);
+            const msgs = data.messages || [];
+            if (!msgs.length) {
+                messagesEl.innerHTML = '<div class="empty-state"><i class="fa-solid fa-message"></i><p>No messages yet. Start the conversation.</p></div>';
+                return;
+            }
+            renderMessages(msgs);
+        } catch {
+            messagesEl.innerHTML = '<div class="empty-state"><i class="fa-solid fa-message"></i><p>No messages yet.</p></div>';
+        }
+    }
+
+    function renderMessages(msgs) {
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = msgs.map(m => {
+            const isSent = m.sender_role === 'OPERATOR' || m.sender === 'OPERATOR';
+            const time = m.timestamp ? timeAgo(m.timestamp) : '';
+            const receipt = isSent ? `<span class="msg-receipt">✓✓</span>` : '';
+            return `
+            <div class="message-bubble ${isSent ? 'sent' : ''}">
+                ${!isSent ? `<div class="msg-avatar">${getAvatarInitials(m.sender_name || 'O')}</div>` : ''}
+                <div class="msg-content">
+                    <div class="msg-text">${m.text || m.message || ''}</div>
+                    <div style="display:flex;align-items:center;gap:4px;">${receipt}<span class="msg-time">${time}</span></div>
+                </div>
+                ${isSent ? `<div class="msg-avatar" style="background:var(--accent-green-dim);color:var(--accent-green);border-color:rgba(0,255,136,0.2);">OP</div>` : ''}
+            </div>`;
+        }).join('');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // ── Send Message ──
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const text  = input.value.trim();
+        if (!text || (!activeDeviceId && !activeOwnerId)) return;
+        input.value = '';
+        input.style.height = 'auto';
+        const threadId = activeDeviceId || activeOwnerId;
+        try {
+            await AegisAPI.messages.send(threadId, text, 'OPERATOR');
+            await loadMessages();
+        } catch(e) {
+            // Optimistic render
+            const msgs = document.getElementById('chatMessages');
+            const emptyState = msgs.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble sent';
+            bubble.innerHTML = `<div class="msg-content"><div class="msg-text">${text}</div><div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;"><span class="msg-receipt">✓</span><span class="msg-time">just now</span></div></div><div class="msg-avatar" style="background:var(--accent-green-dim);color:var(--accent-green);border-color:rgba(0,255,136,0.2);">OP</div>`;
+            msgs.appendChild(bubble);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+    }
+
+    async function updateDeviceInfoPanel(deviceId) {
+        try {
+            const devs = await AegisAPI.locations.allLatest();
+            const locs = devs.locations || [];
+            const loc  = locs.find(l => l.device_id === deviceId || l.owner_name === deviceId);
+            if (loc) {
+                document.getElementById('infoLat').textContent = formatCoord(loc.latitude);
+                document.getElementById('infoLng').textContent = formatCoord(loc.longitude);
+                document.getElementById('infoLastUpdate').textContent = loc.timestamp ? timeAgo(loc.timestamp) : '—';
+            }
+        } catch {}
+    }
+
+    // ── Auto-resize textarea ──
+    document.getElementById('chatInput').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    document.getElementById('sendMsgBtn').addEventListener('click', sendMessage);
+    document.getElementById('chatInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+    document.getElementById('refreshMsgBtn')?.addEventListener('click', loadMessages);
+
+    // Thread search
+    document.getElementById('threadSearch').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        document.querySelectorAll('.thread-item').forEach(el => {
+            el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+
+    // WS events
+    AegisWS.on('message_received', (p) => {
+        if (p.device_id === activeDeviceId || p.sender === activeOwnerId) loadMessages();
+        // Typing indicator
+        const ti = document.getElementById('typingIndicator');
+        if (ti) { ti.classList.remove('hidden'); setTimeout(() => ti.classList.add('hidden'), 3000); }
+        loadThreads();
+    });
+
+    AegisWS.on('typing', (p) => {
+        if (p.device_id === activeDeviceId) {
+            const ti = document.getElementById('typingIndicator');
+            document.getElementById('typingText').textContent = `${p.owner_name || 'Owner'} is typing…`;
+            if (ti) { ti.classList.remove('hidden'); clearTimeout(window._typingTimer); window._typingTimer = setTimeout(() => ti.classList.add('hidden'), 3000); }
+        }
+    });
+
+    loadThreads();
+    pollTimer = setInterval(loadThreads, 30000);
+})();
+</script>
+</body>
+</html>

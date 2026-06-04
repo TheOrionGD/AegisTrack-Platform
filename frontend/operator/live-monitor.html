@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Live Monitor</title>
+    <meta name="description" content="Real-time device location monitoring, geofence management, and alert tracking.">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/operator-portal.css">
+    <link rel="stylesheet" href="../css/live-monitor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" referrerpolicy="no-referrer">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" referrerpolicy="no-referrer"></script>
+    <style>
+        /* Override live-monitor.css body defaults for portal integration */
+        body { background: var(--bg-base); }
+        .monitor-body { height: calc(100vh - var(--topbar-height) - 56px - 24px); }
+        .topbar.monitor-topbar { display: none; } /* hide old topbar, use new one */
+        #monitorApp { display: flex; flex-direction: column; height: calc(100vh - var(--topbar-height)); }
+        #authOverlay { top: var(--topbar-height); }
+    </style>
+</head>
+<body>
+<div class="op-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+        <header class="topbar" id="topbar"></header>
+        <!-- Reuse the existing live-monitor structure, minus its own auth overlay -->
+        <div id="monitorApp" class="monitor-app" style="display:flex;flex:1;overflow:hidden;">
+            <!-- LEFT SIDEBAR: Device List -->
+            <aside class="sidebar" id="monitorSidebar" style="position:relative;width:260px;min-height:0;border-right:1px solid var(--border-soft);display:flex;flex-direction:column;overflow:hidden;">
+                <div class="sidebar-header">
+                    <h3><i class="fa-solid fa-mobile-screen"></i> Enrolled Devices</h3>
+                    <span id="deviceCount" class="device-count-badge">0</span>
+                </div>
+                <div class="sidebar-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input id="deviceSearch" type="text" placeholder="Search device or owner…">
+                </div>
+                <div id="deviceList" class="device-list" style="flex:1;overflow-y:auto;">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <p>Loading devices…</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- CENTER: Map -->
+            <main class="map-section" style="flex:1;position:relative;min-width:0;">
+                <div id="map" class="leaflet-map"></div>
+                <div id="mapNoDeviceOverlay" class="map-overlay">
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                    <h3>Select a device</h3>
+                    <p>Choose a device from the left panel to view its live position on the map.</p>
+                </div>
+                <div class="map-controls-float">
+                    <button id="centerMapBtn" class="map-float-btn" title="Center on device"><i class="fa-solid fa-crosshairs"></i></button>
+                    <button id="togglePathBtn" class="map-float-btn active" title="Toggle movement path"><i class="fa-solid fa-route"></i></button>
+                    <button id="toggleGeofenceBtn" class="map-float-btn active" title="Toggle geofence"><i class="fa-solid fa-draw-polygon"></i></button>
+                </div>
+            </main>
+
+            <!-- RIGHT PANEL -->
+            <aside class="detail-panel" id="detailPanel" style="width:280px;overflow-y:auto;">
+                <section class="dp-section" id="deviceDetailSection">
+                    <div class="dp-section-header">
+                        <h4><i class="fa-solid fa-info-circle"></i> Device Detail</h4>
+                        <div id="deviceStatusBadge" class="status-badge badge-inactive">NO DEVICE</div>
+                    </div>
+                    <div id="deviceDetailEmpty" class="dp-empty">
+                        <i class="fa-solid fa-hand-pointer"></i>
+                        <p>Select a device from the list</p>
+                    </div>
+                    <div id="deviceDetailContent" class="hidden">
+                        <div class="detail-row"><span>Device</span><strong id="detDeviceName">—</strong></div>
+                        <div class="detail-row"><span>Owner</span><strong id="detOwnerName">—</strong></div>
+                        <div class="detail-row"><span>Model</span><strong id="detDeviceModel">—</strong></div>
+                        <div class="detail-row"><span>OS</span><strong id="detDeviceOS">—</strong></div>
+                        <div class="detail-row"><span>Latitude</span><strong id="detLatitude" class="coord-val">—</strong></div>
+                        <div class="detail-row"><span>Longitude</span><strong id="detLongitude" class="coord-val">—</strong></div>
+                        <div class="detail-row"><span>Accuracy</span><strong id="detAccuracy">—</strong></div>
+                        <div class="detail-row"><span>Last Seen</span><strong id="detLastSeen">—</strong></div>
+                        <div class="detail-row"><span>Alerts (24h)</span><strong id="detAlerts" class="alert-count">0</strong></div>
+                        <div class="detail-row" style="margin-top:10px;border-top:1px dashed rgba(255,255,255,0.06);padding-top:10px;">
+                            <span>Maps Pin</span>
+                            <a id="detGoogleMapsLink" href="#" target="_blank" style="color:#00f2ff;font-weight:bold;font-size:13px;"><i class="fa-solid fa-map-location-dot"></i> View</a>
+                        </div>
+                        <div class="geofence-status-row" id="geofenceStatusRow">
+                            <i class="fa-solid fa-draw-polygon"></i>
+                            <span id="geofenceStatusText">No geofence configured</span>
+                        </div>
+                        <button id="forceLocationBtn" class="btn-force-location"><i class="fa-solid fa-bolt"></i> Force Location</button>
+                    </div>
+                </section>
+
+                <section class="dp-section" id="intervalSection">
+                    <div class="dp-section-header"><h4><i class="fa-solid fa-clock"></i> Update Interval</h4></div>
+                    <div class="interval-grid">
+                        <button class="interval-btn" data-ms="60000">1 min</button>
+                        <button class="interval-btn" data-ms="300000">5 min</button>
+                        <button class="interval-btn active" data-ms="600000">10 min</button>
+                        <button class="interval-btn" data-ms="1800000">30 min</button>
+                        <button class="interval-btn" data-ms="3600000">1 hr</button>
+                    </div>
+                </section>
+
+                <section class="dp-section" id="geofenceSection">
+                    <div class="dp-section-header">
+                        <h4><i class="fa-solid fa-draw-polygon"></i> Geofence</h4>
+                        <button id="useDevicePosBtn" class="btn-chip"><i class="fa-solid fa-location-dot"></i> Use Device Pos</button>
+                    </div>
+                    <div class="geofence-form">
+                        <label class="gf-label">Center Latitude<input id="gfCenterLat" type="number" step="any" placeholder="e.g. 12.9716"></label>
+                        <label class="gf-label">Center Longitude<input id="gfCenterLng" type="number" step="any" placeholder="e.g. 77.5946"></label>
+                        <label class="gf-label">Radius: <span id="radiusDisplay">500 m</span>
+                            <input id="gfRadius" type="range" min="50" max="5000" step="50" value="500">
+                        </label>
+                        <button id="setGeofenceBtn" class="btn-set-geofence" disabled><i class="fa-solid fa-shield-halved"></i> Arm Geofence</button>
+                    </div>
+                </section>
+
+                <section class="dp-section" id="alertSection">
+                    <div class="dp-section-header">
+                        <h4><i class="fa-solid fa-triangle-exclamation"></i> Alert Feed</h4>
+                        <span id="alertFeedCount" class="alert-feed-badge">0</span>
+                    </div>
+                    <div id="alertFeed" class="alert-feed">
+                        <div class="dp-empty"><i class="fa-solid fa-check-circle" style="color:#00ff88;"></i><p>No alerts</p></div>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<div id="breachToast" class="breach-toast hidden">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <div><strong>GEOFENCE BREACH</strong><p id="breachToastMsg">Device has exited the monitored zone.</p></div>
+    <button id="breachToastClose"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/operator-portal.js"></script>
+<script src="../js/live-monitor.js"></script>
+<script>
+(async () => {
+    await initOperatorPortal('Live Monitor');
+    // The existing live-monitor.js will handle map init, device loading, and WS
+    // It checks for authOverlay which doesn't exist here, so it will proceed directly
+})();
+</script>
+</body>
+</html>

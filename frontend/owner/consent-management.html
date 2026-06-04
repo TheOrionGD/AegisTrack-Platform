@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Consent Management</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/owner-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body class="owner-shell">
+    <header class="owner-topbar" id="ownerTopbar"></header>
+    <main class="owner-content">
+        <div class="page-header" style="margin-bottom:var(--space-5);">
+            <h1>Consent Management</h1>
+            <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-top:4px;">You are always in control of your tracking consent</p>
+        </div>
+
+        <!-- Current Consent Status -->
+        <div class="device-hero" id="consentStatusCard">
+            <div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-4);">Current Consent Status</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5);">
+                <div>
+                    <div style="font-size:var(--text-3xl);font-weight:900;" id="consentStatusText">—</div>
+                    <div style="font-size:var(--text-sm);color:var(--text-secondary);margin-top:4px;" id="consentStatusDesc">Loading your consent status…</div>
+                </div>
+                <div class="device-status-ring ring-inactive" id="consentStatusRing">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                </div>
+            </div>
+
+            <!-- Info rows -->
+            <div style="background:var(--bg-elevated);border:1px solid var(--border-soft);border-radius:var(--radius-lg);padding:var(--space-4);margin-bottom:var(--space-5);">
+                <div class="info-row"><span style="font-size:var(--text-sm);color:var(--text-secondary);">Device</span><span id="cmDeviceName" style="font-weight:600;">—</span></div>
+                <div class="info-row"><span style="font-size:var(--text-sm);color:var(--text-secondary);">Tracking Purpose</span><span id="cmPurpose" style="font-size:var(--text-sm);">—</span></div>
+                <div class="info-row"><span style="font-size:var(--text-sm);color:var(--text-secondary);">Organisation</span><span id="cmOrg" style="font-size:var(--text-sm);">—</span></div>
+                <div class="info-row"><span style="font-size:var(--text-sm);color:var(--text-secondary);">Consent Expiry</span><span id="cmExpiry" style="font-size:var(--text-sm);">—</span></div>
+                <div class="info-row"><span style="font-size:var(--text-sm);color:var(--text-secondary);">Enrolled On</span><span id="cmEnrolled" style="font-size:var(--text-sm);">—</span></div>
+            </div>
+
+            <!-- Actions -->
+            <div class="consent-action-row">
+                <button class="consent-action-btn consent-btn-pause" id="cmPauseBtn" onclick="doConsentAction('pause')">
+                    <i class="fa-solid fa-pause"></i> Pause
+                </button>
+                <button class="consent-action-btn consent-btn-resume hidden" id="cmResumeBtn" onclick="doConsentAction('resume')">
+                    <i class="fa-solid fa-play"></i> Resume
+                </button>
+                <button class="consent-action-btn" onclick="downloadConsentPDF()" style="color:var(--accent-cyan);">
+                    <i class="fa-solid fa-download"></i> Export
+                </button>
+                <button class="consent-action-btn consent-btn-revoke" onclick="confirmRevoke()">
+                    <i class="fa-solid fa-ban"></i> Revoke
+                </button>
+            </div>
+        </div>
+
+        <!-- What does this mean? -->
+        <div class="section-card" style="margin-bottom:var(--space-5);">
+            <div class="section-card-header"><h3><i class="fa-solid fa-circle-info"></i> Understanding Your Consent</h3></div>
+            <div class="section-card-body" style="display:flex;flex-direction:column;gap:var(--space-4);">
+                <div style="display:flex;align-items:flex-start;gap:var(--space-3);">
+                    <div style="width:36px;height:36px;border-radius:50%;background:var(--accent-green-dim);color:var(--accent-green);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-play"></i></div>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:4px;">Tracking Active</div>
+                        <div style="font-size:var(--text-sm);color:var(--text-secondary);">Your operator can see your device's real-time GPS position, as agreed during enrollment.</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:var(--space-3);">
+                    <div style="width:36px;height:36px;border-radius:50%;background:var(--color-warning-dim);color:var(--color-warning);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-pause"></i></div>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:4px;">Paused</div>
+                        <div style="font-size:var(--text-sm);color:var(--text-secondary);">Tracking is temporarily suspended. No new location data is shared. You can resume at any time.</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:var(--space-3);">
+                    <div style="width:36px;height:36px;border-radius:50%;background:var(--color-danger-dim);color:var(--color-danger);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-ban"></i></div>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:4px;">Revoked</div>
+                        <div style="font-size:var(--text-sm);color:var(--text-secondary);">Permanent. All tracking stops immediately. You will need a new enrollment link from your operator to re-enroll.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consent Audit Log -->
+        <div class="section-card">
+            <div class="section-card-header"><h3><i class="fa-solid fa-clock-rotate-left"></i> Full Consent History</h3></div>
+            <div class="section-card-body" style="padding:0;">
+                <div class="timeline" style="padding:var(--space-5);padding-top:var(--space-3);" id="fullTimeline">
+                    <div class="empty-state" style="padding:var(--space-6);"><i class="fa-solid fa-clock-rotate-left"></i><p>Loading history…</p></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+
+<!-- Revoke Confirm Modal -->
+<div class="modal-backdrop" id="revokeModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 style="color:var(--color-danger);"><i class="fa-solid fa-ban"></i> Revoke Consent</h3>
+            <button class="btn btn-ghost btn-icon btn-icon-sm" onclick="document.getElementById('revokeModal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7;">
+                <strong style="color:var(--color-danger);">This action is permanent and cannot be undone.</strong><br>
+                Revoking consent will immediately stop all tracking and delete your tracking session. You will need a new enrollment link from your operator to re-enroll any device.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="document.getElementById('revokeModal').classList.remove('open')">Cancel</button>
+            <button class="btn btn-danger" id="confirmRevokeBtn"><i class="fa-solid fa-ban"></i> Revoke Permanently</button>
+        </div>
+    </div>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/owner-portal.js"></script>
+<script>
+(async () => {
+    await initOwnerPortal('Consent');
+
+    let deviceId = null;
+    let currentStatus = null;
+
+    const statusMap = {
+        TRACKING_ACTIVE: { ring:'ring-active', text:'Active', desc:'Tracking is live. Your operator can see your location.', color:'var(--accent-green)' },
+        PAUSED:          { ring:'ring-paused', text:'Paused', desc:'Tracking paused. No location is being shared.', color:'var(--color-warning)' },
+        REVOKED:         { ring:'ring-revoked', text:'Revoked', desc:'Consent revoked. All tracking has stopped permanently.', color:'var(--color-danger)' },
+        CONSENT_GRANTED: { ring:'ring-active', text:'Granted', desc:'Consent granted. Tracking will start shortly.', color:'var(--accent-green)' },
+    };
+
+    async function loadConsent() {
+        try {
+            const data = await AegisAPI.owner.myDevice();
+            const device = data.device || data;
+            deviceId = device.device_id;
+            currentStatus = device.tracking_status || device.status || 'UNKNOWN';
+
+            document.getElementById('cmDeviceName').textContent = device.device_name || device.device_id || '—';
+            document.getElementById('cmPurpose').textContent    = device.tracking_purpose || '—';
+            document.getElementById('cmOrg').textContent        = device.organization_name || '—';
+            document.getElementById('cmExpiry').textContent     = device.consent_expiry ? new Date(device.consent_expiry).toLocaleDateString() : '—';
+            document.getElementById('cmEnrolled').textContent   = device.registered_at || device.created_at ? new Date(device.registered_at || device.created_at).toLocaleDateString() : '—';
+
+            const s = statusMap[currentStatus] || { ring:'ring-inactive', text:currentStatus, desc:'Unknown status.', color:'var(--text-muted)' };
+            document.getElementById('consentStatusText').textContent = s.text;
+            document.getElementById('consentStatusText').style.color = s.color;
+            document.getElementById('consentStatusDesc').textContent = s.desc;
+            document.getElementById('consentStatusRing').className = `device-status-ring ${s.ring}`;
+            document.getElementById('consentStatusRing').innerHTML = currentStatus === 'TRACKING_ACTIVE' ? '<i class="fa-solid fa-location-dot"></i>' : currentStatus === 'PAUSED' ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-ban"></i>';
+
+            const pauseBtn  = document.getElementById('cmPauseBtn');
+            const resumeBtn = document.getElementById('cmResumeBtn');
+            if (currentStatus === 'PAUSED') { pauseBtn.classList.add('hidden'); resumeBtn.classList.remove('hidden'); }
+            else { pauseBtn.classList.remove('hidden'); resumeBtn.classList.add('hidden'); }
+        } catch { document.getElementById('consentStatusText').textContent = 'No device'; }
+    }
+
+    async function loadHistory() {
+        const timeline = document.getElementById('fullTimeline');
+        try {
+            const data = await AegisAPI.get('/consent-history');
+            const events = data.history || data.events || [];
+            if (!events.length) {
+                timeline.innerHTML = '<div class="empty-state" style="padding:var(--space-6);"><i class="fa-solid fa-clock-rotate-left"></i><p>No consent events recorded yet</p></div>';
+                return;
+            }
+            const dotMap  = { CONSENT_GRANTED:'td-green', CONSENT_REVOKED:'td-danger', TRACKING_PAUSED:'td-warn', TRACKING_RESUMED:'td-cyan', TRACKING_ACTIVE:'td-green' };
+            const iconMap = { CONSENT_GRANTED:'fa-check', CONSENT_REVOKED:'fa-ban', TRACKING_PAUSED:'fa-pause', TRACKING_RESUMED:'fa-play', TRACKING_ACTIVE:'fa-location-dot' };
+            timeline.innerHTML = events.map(ev => `
+                <div class="timeline-item">
+                    <div class="timeline-dot ${dotMap[ev.action] || 'td-cyan'}"><i class="fa-solid ${iconMap[ev.action] || 'fa-circle'}" style="font-size:10px;"></i></div>
+                    <div class="timeline-body">
+                        <div class="timeline-title">${ev.action?.replace(/_/g,' ') || '—'}</div>
+                        <div class="timeline-time">${ev.timestamp ? new Date(ev.timestamp).toLocaleString() : '—'}</div>
+                        ${ev.note ? `<div class="timeline-desc">${ev.note}</div>` : ''}
+                    </div>
+                </div>`).join('');
+        } catch {
+            timeline.innerHTML = '<div class="empty-state" style="padding:var(--space-6);"><i class="fa-solid fa-clock-rotate-left"></i><p>History unavailable</p></div>';
+        }
+    }
+
+    window.doConsentAction = async function(action) {
+        try {
+            await AegisAPI.owner.consent(action, deviceId);
+            showToast(`Tracking ${action}d successfully`, 'success');
+            await loadConsent();
+            await loadHistory();
+        } catch(e) { showToast(AegisAPI.formatError(e), 'danger'); }
+    };
+
+    window.confirmRevoke = function() {
+        document.getElementById('revokeModal').classList.add('open');
+    };
+
+    document.getElementById('confirmRevokeBtn').addEventListener('click', async () => {
+        document.getElementById('revokeModal').classList.remove('open');
+        await doConsentAction('revoke');
+    });
+
+    window.downloadConsentPDF = function() {
+        // Generate a simple text export
+        const text = [
+            'AegisTrack Consent Record',
+            '========================',
+            `Device: ${document.getElementById('cmDeviceName').textContent}`,
+            `Status: ${document.getElementById('consentStatusText').textContent}`,
+            `Purpose: ${document.getElementById('cmPurpose').textContent}`,
+            `Organisation: ${document.getElementById('cmOrg').textContent}`,
+            `Expiry: ${document.getElementById('cmExpiry').textContent}`,
+            `Enrolled: ${document.getElementById('cmEnrolled').textContent}`,
+            `Exported: ${new Date().toISOString()}`,
+        ].join('\n');
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        Object.assign(document.createElement('a'), { href: url, download: 'aegistrack_consent.txt' }).click();
+        URL.revokeObjectURL(url);
+    };
+
+    loadConsent();
+    loadHistory();
+})();
+</script>
+</body>
+</html>

@@ -5,7 +5,7 @@
  */
 
 const TEST_CONFIG = {
-    baseUrl: 'http://10.171.58.245:5000',
+    baseUrl: 'http://localhost:5000',
     testUser: 'TEST_OP_' + Math.floor(Math.random() * 1000),
     testPass: 'SECURE_ALPHA_123',
     testDeviceId: 'DRONE_NODE_' + Math.floor(Math.random() * 100)

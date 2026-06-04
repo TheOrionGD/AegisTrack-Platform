@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Operator Settings</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/operator-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body>
+<div class="op-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+        <header class="topbar" id="topbar"></header>
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Settings</h1>
+                <p class="page-subtitle">Platform configuration, notifications, and account management</p>
+            </div>
+
+            <div class="settings-grid">
+                <!-- Settings Nav -->
+                <div class="settings-nav">
+                    <button class="settings-nav-item active" data-section="account" onclick="switchSection('account')">
+                        <i class="fa-solid fa-user"></i> Account
+                    </button>
+                    <button class="settings-nav-item" data-section="notifications" onclick="switchSection('notifications')">
+                        <i class="fa-solid fa-bell"></i> Notifications
+                    </button>
+                    <button class="settings-nav-item" data-section="platform" onclick="switchSection('platform')">
+                        <i class="fa-solid fa-gear"></i> Platform
+                    </button>
+                    <button class="settings-nav-item" data-section="security" onclick="switchSection('security')">
+                        <i class="fa-solid fa-shield-halved"></i> Security
+                    </button>
+                    <button class="settings-nav-item" data-section="api" onclick="switchSection('api')">
+                        <i class="fa-solid fa-code"></i> API & Backend
+                    </button>
+                    <button class="settings-nav-item" data-section="audit" onclick="switchSection('audit')">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Audit Log
+                    </button>
+                </div>
+
+                <!-- Settings Content -->
+                <div>
+                    <!-- Account -->
+                    <div class="settings-section active" id="section-account">
+                        <div class="section-card">
+                            <div class="section-card-header"><h3><i class="fa-solid fa-user"></i> Account Information</h3></div>
+                            <div class="section-card-body" style="display:flex;flex-direction:column;gap:var(--space-5);">
+                                <div style="display:flex;align-items:center;gap:var(--space-5);">
+                                    <div id="accountAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--text-inverse);flex-shrink:0;">OP</div>
+                                    <div>
+                                        <div style="font-size:var(--text-xl);font-weight:700;" id="accountDisplayName">Operator</div>
+                                        <div style="font-size:var(--text-sm);color:var(--text-secondary);" id="accountRole">Operator Role</div>
+                                        <div class="badge badge-green" style="margin-top:4px;">Operator Access</div>
+                                    </div>
+                                </div>
+
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+                                    <div class="form-group">
+                                        <label class="form-label">Username</label>
+                                        <input class="form-input" id="settingUsername" type="text" readonly style="cursor:default;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Role</label>
+                                        <input class="form-input" value="OPERATOR" readonly style="cursor:default;color:var(--accent-green);">
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-danger btn-sm" id="logoutBtn" style="align-self:flex-start;">
+                                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="settings-section" id="section-notifications">
+                        <div class="section-card">
+                            <div class="section-card-header"><h3><i class="fa-solid fa-bell"></i> Alert Notifications</h3></div>
+                            <div class="section-card-body" style="display:flex;flex-direction:column;gap:var(--space-5);">
+                                <div id="notifToggles" style="display:flex;flex-direction:column;gap:var(--space-3);">
+                                    <!-- Toggles rendered by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Platform -->
+                    <div class="settings-section" id="section-platform">
+                        <div class="section-card">
+                            <div class="section-card-header"><h3><i class="fa-solid fa-gear"></i> Platform Settings</h3></div>
+                            <div class="section-card-body" style="display:flex;flex-direction:column;gap:var(--space-4);">
+                                <div class="form-group">
+                                    <label class="form-label">Default Map Provider</label>
+                                    <select class="form-select" id="mapProvider">
+                                        <option value="carto-dark" selected>CartoDB Dark (Default)</option>
+                                        <option value="osm">OpenStreetMap</option>
+                                        <option value="satellite">Satellite</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Location Update Interval (seconds)</label>
+                                    <select class="form-select" id="updateInterval">
+                                        <option value="30">30 seconds</option>
+                                        <option value="60" selected>60 seconds</option>
+                                        <option value="300">5 minutes</option>
+                                        <option value="600">10 minutes</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Date / Time Format</label>
+                                    <select class="form-select" id="dtFormat">
+                                        <option value="relative" selected>Relative (e.g. 2 mins ago)</option>
+                                        <option value="absolute">Absolute (DD/MM/YYYY HH:MM)</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" id="savePlatformBtn"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security -->
+                    <div class="settings-section" id="section-security">
+                        <div class="section-card">
+                            <div class="section-card-header"><h3><i class="fa-solid fa-shield-halved"></i> Security</h3></div>
+                            <div class="section-card-body" style="display:flex;flex-direction:column;gap:var(--space-5);">
+                                <div class="form-group">
+                                    <label class="form-label">New Password</label>
+                                    <input class="form-input" id="newPwd" type="password" placeholder="Enter new password">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Confirm Password</label>
+                                    <input class="form-input" id="confirmPwd" type="password" placeholder="Confirm new password">
+                                </div>
+                                <button class="btn btn-primary btn-sm" id="changePwdBtn"><i class="fa-solid fa-lock"></i> Update Password</button>
+                                <div class="divider"></div>
+                                <div style="background:var(--bg-elevated);border:1px solid var(--border-soft);border-radius:var(--radius-lg);padding:var(--space-5);">
+                                    <div style="font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-3);">Token Information</div>
+                                    <div style="display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--text-xs);color:var(--text-secondary);">
+                                        <div>JWT Subject: <span id="jwtSub" style="font-family:var(--font-mono);color:var(--accent-cyan);">—</span></div>
+                                        <div>Role: <span id="jwtRole" style="color:var(--accent-green);">—</span></div>
+                                        <div>Expires: <span id="jwtExp" style="color:var(--text-muted);">—</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API -->
+                    <div class="settings-section" id="section-api">
+                        <div class="section-card">
+                            <div class="section-card-header"><h3><i class="fa-solid fa-code"></i> API & Backend Configuration</h3></div>
+                            <div class="section-card-body" style="display:flex;flex-direction:column;gap:var(--space-4);">
+                                <div class="form-group">
+                                    <label class="form-label">Backend API URL</label>
+                                    <div style="display:flex;gap:var(--space-2);">
+                                        <input class="form-input" id="backendUrlInput" type="text" placeholder="http://localhost:5000">
+                                        <button class="btn btn-secondary btn-sm" id="testConnectionBtn">Test</button>
+                                    </div>
+                                    <div id="connectionStatus" style="font-size:var(--text-xs);margin-top:var(--space-2);color:var(--text-muted);">—</div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">WebSocket URL</label>
+                                    <input class="form-input" id="wsUrlInput" type="text" placeholder="ws://localhost:5000/ws">
+                                </div>
+                                <button class="btn btn-primary" id="saveApiBtn"><i class="fa-solid fa-floppy-disk"></i> Save & Reconnect</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audit Log -->
+                    <div class="settings-section" id="section-audit">
+                        <div class="section-card">
+                            <div class="section-card-header">
+                                <h3><i class="fa-solid fa-clock-rotate-left"></i> Consent Audit Log</h3>
+                                <button class="btn btn-secondary btn-sm" id="refreshAuditBtn"><i class="fa-solid fa-rotate-right"></i></button>
+                            </div>
+                            <div style="overflow-x:auto;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr><th>Timestamp</th><th>Device</th><th>Action</th><th>Actor</th></tr>
+                                    </thead>
+                                    <tbody id="auditTableBody">
+                                        <tr><td colspan="4" style="text-align:center;padding:var(--space-6);color:var(--text-muted);">Loading audit log…</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/operator-portal.js"></script>
+<script>
+(async () => {
+    await initOperatorPortal('Settings');
+
+    // Switch sections
+    window.switchSection = function(id) {
+        document.querySelectorAll('.settings-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.settings-nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(`section-${id}`).classList.add('active');
+        document.querySelectorAll('.settings-nav-item').forEach(el => {
+            if (el.dataset.section === id) el.classList.add('active');
+        });
+    };
+
+    // Account info
+    const user = AegisAuth.getUser();
+    const identity = AegisAuth.getIdentity();
+    document.getElementById('accountDisplayName').textContent = identity || 'Operator';
+    document.getElementById('settingUsername').value = identity || '';
+    document.getElementById('accountAvatar').textContent = getAvatarInitials(identity || 'OP');
+
+    // JWT info
+    if (user) {
+        document.getElementById('jwtSub').textContent = user.sub || '—';
+        document.getElementById('jwtRole').textContent = user.role || AegisAuth.getRole() || '—';
+        if (user.exp) {
+            document.getElementById('jwtExp').textContent = new Date(user.exp * 1000).toLocaleString();
+        }
+    }
+
+    // Notification toggles
+    const notifItems = [
+        { key:'geofence_breach', label:'Geofence Breach Alerts', default:true },
+        { key:'status_changed', label:'Tracking Status Changes', default:true },
+        { key:'new_message', label:'New Owner Messages', default:true },
+        { key:'device_offline', label:'Device Offline Alerts', default:false },
+        { key:'consent_revoked', label:'Consent Revocation Alerts', default:true },
+    ];
+    const notifStore = JSON.parse(localStorage.getItem('aegis_notif_prefs') || '{}');
+    document.getElementById('notifToggles').innerHTML = notifItems.map(n => {
+        const checked = notifStore[n.key] !== undefined ? notifStore[n.key] : n.default;
+        return `<label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:var(--space-3) var(--space-4);background:var(--bg-elevated);border:1px solid var(--border-soft);border-radius:var(--radius-lg);">
+            <span style="font-size:var(--text-sm);">${n.label}</span>
+            <input type="checkbox" ${checked ? 'checked' : ''} data-key="${n.key}" style="accent-color:var(--accent-green);width:18px;height:18px;" onchange="saveNotifPref('${n.key}',this.checked)">
+        </label>`;
+    }).join('');
+    window.saveNotifPref = (key, val) => {
+        const prefs = JSON.parse(localStorage.getItem('aegis_notif_prefs') || '{}');
+        prefs[key] = val;
+        localStorage.setItem('aegis_notif_prefs', JSON.stringify(prefs));
+        showToast(`Notification preference saved`, 'success', 2000);
+    };
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => AegisAuth.logout());
+
+    // Platform save
+    document.getElementById('savePlatformBtn').addEventListener('click', () => {
+        localStorage.setItem('aegis_map_provider', document.getElementById('mapProvider').value);
+        localStorage.setItem('aegis_update_interval', document.getElementById('updateInterval').value);
+        localStorage.setItem('aegis_dt_format', document.getElementById('dtFormat').value);
+        showToast('Platform settings saved', 'success');
+    });
+
+    // Load saved platform settings
+    const mp = localStorage.getItem('aegis_map_provider');
+    const ui = localStorage.getItem('aegis_update_interval');
+    const dt = localStorage.getItem('aegis_dt_format');
+    if (mp) document.getElementById('mapProvider').value = mp;
+    if (ui) document.getElementById('updateInterval').value = ui;
+    if (dt) document.getElementById('dtFormat').value = dt;
+
+    // API config
+    const savedBackend = localStorage.getItem('aegis_backend_url') || window.BACKEND_URL || '';
+    document.getElementById('backendUrlInput').value = savedBackend;
+    document.getElementById('wsUrlInput').value = (savedBackend ? savedBackend.replace(/^http/, 'ws') + '/ws' : '');
+
+    document.getElementById('testConnectionBtn').addEventListener('click', async () => {
+        const url = document.getElementById('backendUrlInput').value.trim();
+        const el  = document.getElementById('connectionStatus');
+        el.textContent = 'Testing…';
+        try {
+            const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(5000) });
+            if (res.ok) {
+                el.textContent = '✓ Connected successfully';
+                el.style.color = 'var(--accent-green)';
+            } else throw new Error('Non-200 response');
+        } catch {
+            el.textContent = '✗ Connection failed — check URL';
+            el.style.color = 'var(--color-danger)';
+        }
+    });
+
+    document.getElementById('saveApiBtn').addEventListener('click', () => {
+        localStorage.setItem('aegis_backend_url', document.getElementById('backendUrlInput').value.trim());
+        localStorage.setItem('aegis_ws_url', document.getElementById('wsUrlInput').value.trim());
+        showToast('API settings saved. Reconnecting WebSocket…', 'success');
+        AegisWS.disconnect();
+        setTimeout(() => AegisWS.connect(), 500);
+    });
+
+    // Audit log
+    async function loadAuditLog() {
+        const tbody = document.getElementById('auditTableBody');
+        try {
+            const data = await AegisAPI.get('/audit-log');
+            const logs = data.logs || data.audit_log || [];
+            if (!logs.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:var(--space-6);color:var(--text-muted);">No audit entries</td></tr>'; return; }
+            tbody.innerHTML = logs.slice(0, 50).map(l => `
+                <tr>
+                    <td style="font-size:var(--text-xs);color:var(--text-muted);white-space:nowrap;">${l.timestamp ? new Date(l.timestamp).toLocaleString() : '—'}</td>
+                    <td style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--accent-cyan);">${l.device_id || '—'}</td>
+                    <td><span class="badge ${l.action === 'CONSENT_REVOKED' ? 'badge-danger' : l.action?.includes('ACTIVE') ? 'badge-green' : 'badge-muted'}">${l.action || '—'}</span></td>
+                    <td style="font-size:var(--text-xs);">${l.actor || l.performed_by || '—'}</td>
+                </tr>`).join('');
+        } catch {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:var(--space-6);color:var(--text-muted);">Audit log unavailable</td></tr>';
+        }
+    }
+    document.getElementById('refreshAuditBtn').addEventListener('click', loadAuditLog);
+    loadAuditLog();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Link Expired</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body class="auth-body">
+<div class="auth-shell">
+    <div class="auth-card" style="text-align:center;">
+        <i class="fa-solid fa-clock" style="font-size:64px;color:var(--color-warning);display:block;margin:0 auto var(--space-5);animation:fadeInScale 0.5s ease;"></i>
+        <h1 style="font-size:var(--text-2xl);font-weight:800;margin-bottom:var(--space-2);">Registration Link Expired</h1>
+        <p style="font-size:var(--text-base);color:var(--text-secondary);margin-bottom:var(--space-6);line-height:1.7;">
+            This enrollment link has expired or is no longer valid. Tracking consent links are time-limited for security reasons.
+        </p>
+
+        <div style="background:var(--color-warning-dim);border:1px solid rgba(255,187,51,0.2);border-radius:var(--radius-lg);padding:var(--space-5);margin-bottom:var(--space-6);text-align:left;">
+            <div style="font-size:var(--text-sm);font-weight:700;color:var(--color-warning);margin-bottom:var(--space-3);">
+                <i class="fa-solid fa-triangle-exclamation"></i> Why did this happen?
+            </div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--text-sm);color:var(--text-secondary);">
+                <div><i class="fa-solid fa-dot-circle" style="color:var(--color-warning);font-size:8px;"></i> The link was only valid for a limited time period</div>
+                <div><i class="fa-solid fa-dot-circle" style="color:var(--color-warning);font-size:8px;"></i> The operator may have revoked or regenerated the request</div>
+                <div><i class="fa-solid fa-dot-circle" style="color:var(--color-warning);font-size:8px;"></i> The link has already been used to register a device</div>
+            </div>
+        </div>
+
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-soft);border-radius:var(--radius-lg);padding:var(--space-5);margin-bottom:var(--space-6);text-align:left;">
+            <div style="font-size:var(--text-sm);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-3);">
+                <i class="fa-solid fa-circle-info"></i> What to do next
+            </div>
+            <div style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7;">
+                Contact your operator and ask them to generate a new tracking consent link. They can resend it via WhatsApp, email, or QR code from their Operator Portal.
+            </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+            <a href="../auth/owner-login.html" class="btn btn-primary btn-full btn-lg">
+                <i class="fa-solid fa-right-to-bracket"></i> Already Registered? Login
+            </a>
+            <a href="../landing-page.html" class="btn btn-secondary btn-full">
+                <i class="fa-solid fa-house"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../assets/js/ws.js"></script>
+</body>
+</html>

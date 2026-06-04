@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — AI Assistant (Operator)</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/operator-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body>
+<div class="op-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+        <header class="topbar" id="topbar"></header>
+        <main class="main-content" style="padding:var(--space-5);display:flex;flex-direction:column;overflow:hidden;">
+            <div class="page-header" style="margin-bottom:var(--space-4);">
+                <h1>AI Assistant</h1>
+                <p class="page-subtitle">Intelligent analysis of your monitoring data</p>
+            </div>
+            <div class="ai-shell" style="flex:1;min-height:0;">
+                <!-- Chat -->
+                <div class="ai-chat-shell">
+                    <div class="ai-chat-header-bar">
+                        <div class="user-avatar" style="background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));"><i class="fa-solid fa-robot"></i></div>
+                        <div>
+                            <div style="font-weight:700;">MTS AI — Operator Mode</div>
+                            <div style="font-size:var(--text-xs);color:var(--accent-green);display:flex;align-items:center;gap:4px;">
+                                <span style="width:6px;height:6px;background:var(--accent-green);border-radius:50%;display:inline-block;"></span> Online
+                            </div>
+                        </div>
+                        <button class="btn btn-ghost btn-sm btn-icon" id="clearChatBtn" title="Clear conversation" style="margin-left:auto;">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+
+                    <div class="ai-messages" id="aiMessages">
+                        <!-- Welcome Message -->
+                        <div class="message-bubble" style="max-width:85%;">
+                            <div class="msg-avatar" style="background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));color:var(--text-inverse);"><i class="fa-solid fa-robot" style="font-size:11px;"></i></div>
+                            <div class="msg-content">
+                                <div class="msg-text" style="background:var(--bg-elevated);border-color:var(--border-soft);">
+                                    <strong style="color:var(--accent-cyan);">MTS AI Operator Assistant</strong><br>
+                                    I have access to your device tracking data, geofence alerts, and monitoring history. Ask me anything about your enrolled devices.<br><br>
+                                    <strong>Try asking:</strong><br>
+                                    • "How many devices are currently active?"<br>
+                                    • "Summarise today's alerts"<br>
+                                    • "Which devices are outside geofences?"<br>
+                                    • "Generate a monitoring report"
+                                </div>
+                                <span class="msg-time">AI Ready</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input -->
+                    <div class="chat-input-bar">
+                        <textarea id="aiInput" placeholder="Ask MTS AI about devices, alerts, risks, or reports…" rows="1"></textarea>
+                        <button class="btn btn-primary btn-icon" id="aiSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+
+                <!-- Sidebar: Suggestions + Context -->
+                <div style="display:flex;flex-direction:column;gap:var(--space-4);overflow-y:auto;">
+                    <!-- Quick prompts -->
+                    <div class="section-card">
+                        <div class="section-card-header"><h3><i class="fa-solid fa-lightbulb"></i> Quick Queries</h3></div>
+                        <div class="section-card-body" style="display:flex;flex-direction:column;gap:var(--space-2);">
+                            <button class="btn btn-secondary btn-sm" onclick="quickAsk('How many devices are currently tracking?')" style="text-align:left;justify-content:flex-start;">
+                                <i class="fa-solid fa-mobile-screen-button" style="color:var(--accent-cyan);"></i> Device count
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="quickAsk('Summarise today\'s geofence alerts')" style="text-align:left;justify-content:flex-start;">
+                                <i class="fa-solid fa-triangle-exclamation" style="color:var(--color-warning);"></i> Alert summary
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="quickAsk('Which devices are at high risk?')" style="text-align:left;justify-content:flex-start;">
+                                <i class="fa-solid fa-shield-halved" style="color:var(--color-danger);"></i> Risk analysis
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="quickAsk('Generate a monitoring report for today')" style="text-align:left;justify-content:flex-start;">
+                                <i class="fa-solid fa-chart-line" style="color:var(--accent-green);"></i> Generate report
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="quickAsk('How do I message a device owner?')" style="text-align:left;justify-content:flex-start;">
+                                <i class="fa-solid fa-comments" style="color:var(--accent-cyan);"></i> Communication help
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="quickAsk('Show movement analysis for all devices')" style="text-align:left;justify-content:flex-start;">
+                                <i class="fa-solid fa-route" style="color:var(--accent-green);"></i> Movement analysis
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Context / Dashboard Stats -->
+                    <div class="section-card">
+                        <div class="section-card-header"><h3><i class="fa-solid fa-chart-bar"></i> Context Data</h3></div>
+                        <div class="section-card-body" style="padding:var(--space-3);">
+                            <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+                                <div style="display:flex;justify-content:space-between;font-size:var(--text-sm);">
+                                    <span style="color:var(--text-secondary);">Active Devices</span>
+                                    <strong id="ctxDevices">—</strong>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;font-size:var(--text-sm);">
+                                    <span style="color:var(--text-secondary);">Active Alerts</span>
+                                    <strong id="ctxAlerts" style="color:var(--color-danger);">—</strong>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;font-size:var(--text-sm);">
+                                    <span style="color:var(--text-secondary);">Tracking Requests</span>
+                                    <strong id="ctxReqs">—</strong>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;font-size:var(--text-sm);">
+                                    <span style="color:var(--text-secondary);">WS Connection</span>
+                                    <strong id="ctxWS" style="color:var(--color-warning);">Connecting</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Capabilities -->
+                    <div class="section-card">
+                        <div class="section-card-header"><h3><i class="fa-solid fa-brain"></i> Capabilities</h3></div>
+                        <div class="ai-capabilities" style="padding:var(--space-3);">
+                            <div class="capability-card"><h4><i class="fa-solid fa-location-dot"></i> Location Queries</h4><p>Ask about device positions and movement</p></div>
+                            <div class="capability-card"><h4><i class="fa-solid fa-shield-halved"></i> Risk Analysis</h4><p>Identify high-risk devices and breaches</p></div>
+                            <div class="capability-card"><h4><i class="fa-solid fa-chart-line"></i> Reports</h4><p>Generate monitoring summaries on demand</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/operator-portal.js"></script>
+<script>
+(async () => {
+    await initOperatorPortal('AI Assistant');
+
+    const aiMessages = document.getElementById('aiMessages');
+    const aiInput    = document.getElementById('aiInput');
+    const aiSendBtn  = document.getElementById('aiSendBtn');
+
+    let deviceData = [];
+
+    // Load context
+    async function loadContext() {
+        try {
+            const [dash, locs] = await Promise.allSettled([
+                AegisAPI.dashboard.summary(),
+                AegisAPI.locations.allLatest()
+            ]);
+            if (dash.status === 'fulfilled') {
+                const d = dash.value;
+                document.getElementById('ctxDevices').textContent = d.activeDevices ?? '—';
+                document.getElementById('ctxAlerts').textContent  = d.alerts ?? '—';
+                document.getElementById('ctxReqs').textContent    = d.trackingRequests ?? '—';
+            }
+            if (locs.status === 'fulfilled') {
+                deviceData = locs.value.locations || [];
+            }
+        } catch {}
+    }
+
+    AegisWS.onStatus(s => {
+        const el = document.getElementById('ctxWS');
+        if (el) {
+            el.textContent = s === 'connected' ? 'Connected' : s === 'connecting' ? 'Connecting' : 'Offline';
+            el.style.color = s === 'connected' ? 'var(--accent-green)' : s === 'connecting' ? 'var(--color-warning)' : 'var(--color-danger)';
+        }
+    });
+
+    function addUserMsg(text) {
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble sent';
+        bubble.innerHTML = `
+            <div class="msg-content">
+                <div class="msg-text" style="background:var(--accent-cyan-dim);border-color:rgba(0,194,255,0.2);color:var(--accent-cyan);">${text}</div>
+                <div style="display:flex;justify-content:flex-end;"><span class="msg-time">just now</span></div>
+            </div>
+            <div class="msg-avatar">${getAvatarInitials(AegisAuth.getIdentity() || 'OP')}</div>`;
+        aiMessages.appendChild(bubble);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+    }
+
+    function addAiMsg(text) {
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        bubble.style.maxWidth = '85%';
+        bubble.innerHTML = `
+            <div class="msg-avatar" style="background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));color:var(--text-inverse);"><i class="fa-solid fa-robot" style="font-size:11px;"></i></div>
+            <div class="msg-content">
+                <div class="msg-text" style="background:var(--bg-elevated);border-color:var(--border-soft);">${text}</div>
+                <span class="msg-time">${new Date().toLocaleTimeString()}</span>
+            </div>`;
+        aiMessages.appendChild(bubble);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+    }
+
+    function showTyping() {
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        bubble.id = 'aiTyping';
+        bubble.innerHTML = `
+            <div class="msg-avatar" style="background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));color:var(--text-inverse);"><i class="fa-solid fa-robot" style="font-size:11px;"></i></div>
+            <div class="msg-content"><div class="msg-text ai-typing" style="background:var(--bg-elevated);padding:10px 14px;"><span></span><span></span><span></span></div></div>`;
+        aiMessages.appendChild(bubble);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+    }
+
+    function removeTyping() {
+        const t = document.getElementById('aiTyping');
+        if (t) t.remove();
+    }
+
+    async function sendQuery(query) {
+        const text = (query || aiInput.value).trim();
+        if (!text) return;
+        aiInput.value = '';
+        aiInput.style.height = 'auto';
+        addUserMsg(text);
+        showTyping();
+        aiSendBtn.disabled = true;
+
+        // Simulate AI delay for realism
+        await new Promise(r => setTimeout(r, 800 + Math.random() * 800));
+        const response = await OperatorAI.respond(text, deviceData);
+        removeTyping();
+        addAiMsg(response);
+        aiSendBtn.disabled = false;
+    }
+
+    window.quickAsk = (q) => sendQuery(q);
+
+    aiSendBtn.addEventListener('click', () => sendQuery());
+    aiInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); } });
+    aiInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
+
+    document.getElementById('clearChatBtn').addEventListener('click', () => {
+        aiMessages.innerHTML = '';
+        addAiMsg('Conversation cleared. How can I help you?');
+    });
+
+    loadContext();
+})();
+</script>
+</body>
+</html>

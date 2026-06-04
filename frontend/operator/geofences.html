@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Geofences</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/operator-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" referrerpolicy="no-referrer">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<div class="op-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+        <header class="topbar" id="topbar"></header>
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Geofence Manager</h1>
+                <p class="page-subtitle">Create, configure, and monitor geofence zones per device</p>
+            </div>
+
+            <div style="display:grid;grid-template-columns:320px 1fr;gap:var(--space-5);" id="geoLayout">
+                <!-- Config Panel -->
+                <div style="display:flex;flex-direction:column;gap:var(--space-5);">
+                    <!-- Device Selector -->
+                    <div class="section-card">
+                        <div class="section-card-header"><h3><i class="fa-solid fa-mobile-screen-button"></i> Select Device</h3></div>
+                        <div class="section-card-body">
+                            <select class="form-select" id="deviceSelector">
+                                <option value="">Loading devices…</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Geofence Config -->
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h3><i class="fa-solid fa-draw-polygon"></i> Geofence Config</h3>
+                            <span id="geoStatusBadge" class="badge badge-muted">INACTIVE</span>
+                        </div>
+                        <div class="section-card-body" style="display:flex;flex-direction:column;gap:var(--space-4);">
+                            <div class="form-group">
+                                <label class="form-label">Center Latitude</label>
+                                <input class="form-input" id="gfLat" type="number" step="any" placeholder="e.g. 12.9716">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Center Longitude</label>
+                                <input class="form-input" id="gfLng" type="number" step="any" placeholder="e.g. 77.5946">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="display:flex;justify-content:space-between;">
+                                    Radius <span id="radiusVal" style="color:var(--accent-cyan);">500 m</span>
+                                </label>
+                                <input type="range" id="gfRadius" min="50" max="10000" step="50" value="500"
+                                    style="width:100%;accent-color:var(--accent-cyan);">
+                            </div>
+                            <div style="display:flex;gap:var(--space-3);">
+                                <button class="btn btn-secondary btn-sm" id="useDeviceLocBtn" style="flex:1;">
+                                    <i class="fa-solid fa-location-dot"></i> Use Device Location
+                                </button>
+                                <button class="btn btn-secondary btn-sm" id="useMapCenterBtn" style="flex:1;">
+                                    <i class="fa-solid fa-crosshairs"></i> Use Map Center
+                                </button>
+                            </div>
+                            <div style="display:flex;gap:var(--space-3);">
+                                <button class="btn btn-primary btn-sm" id="setGeoBtn" disabled style="flex:1;">
+                                    <i class="fa-solid fa-shield-halved"></i> Arm Geofence
+                                </button>
+                                <button class="btn btn-danger btn-sm" id="clearGeoBtn" style="flex:1;">
+                                    <i class="fa-solid fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Geofences List -->
+                    <div class="section-card">
+                        <div class="section-card-header"><h3><i class="fa-solid fa-list"></i> Active Zones</h3></div>
+                        <div id="activeGeoList" style="padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2);">
+                            <div class="empty-state" style="padding:var(--space-5);"><i class="fa-solid fa-draw-polygon"></i><p>No active geofences</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map -->
+                <div class="section-card" style="overflow:hidden;padding:0;min-height:500px;">
+                    <div id="geoMap" style="height:100%;min-height:500px;border-radius:var(--radius-xl);"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/operator-portal.js"></script>
+<script>
+(async () => {
+    await initOperatorPortal('Geofences');
+
+    let map, deviceMarker, geoCircle;
+    let devices = [];
+    let selectedDevice = null;
+
+    // Init map
+    map = L.map('geoMap', { attributionControl: false }).setView([20.5937, 78.9629], 5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+    // Radius slider
+    document.getElementById('gfRadius').addEventListener('input', (e) => {
+        document.getElementById('radiusVal').textContent = `${e.target.value} m`;
+        updateCirclePreview();
+    });
+
+    function updateCirclePreview() {
+        const lat = parseFloat(document.getElementById('gfLat').value);
+        const lng = parseFloat(document.getElementById('gfLng').value);
+        const r   = parseInt(document.getElementById('gfRadius').value);
+        if (isNaN(lat) || isNaN(lng)) return;
+        if (geoCircle) { map.removeLayer(geoCircle); geoCircle = null; }
+        geoCircle = L.circle([lat, lng], {
+            radius: r, color: '#00ff88', fillColor: '#00ff88',
+            weight: 2, fillOpacity: 0.08
+        }).addTo(map);
+        map.panTo([lat, lng]);
+    }
+
+    ['gfLat','gfLng'].forEach(id => document.getElementById(id).addEventListener('input', updateCirclePreview));
+
+    // Load devices
+    async function loadDeviceList() {
+        try {
+            const locs = await AegisAPI.locations.allLatest();
+            devices = locs.locations || [];
+            const sel = document.getElementById('deviceSelector');
+            sel.innerHTML = '<option value="">— Select a device —</option>' +
+                devices.map(d => `<option value="${d.device_id}">${d.owner_name || d.device_id} (${d.device_id})</option>`).join('');
+        } catch {
+            document.getElementById('deviceSelector').innerHTML = '<option value="">No devices available</option>';
+        }
+    }
+
+    document.getElementById('deviceSelector').addEventListener('change', async (e) => {
+        selectedDevice = e.target.value;
+        if (!selectedDevice) return;
+        document.getElementById('setGeoBtn').disabled = false;
+
+        const dev = devices.find(d => d.device_id === selectedDevice);
+        if (dev?.latitude && dev?.longitude) {
+            if (deviceMarker) map.removeLayer(deviceMarker);
+            deviceMarker = L.circleMarker([dev.latitude, dev.longitude], {
+                radius: 10, fillColor: '#00c2ff', color: '#00c2ff',
+                weight: 2, fillOpacity: 0.8
+            }).addTo(map).bindPopup(`<strong>${dev.owner_name || dev.device_id}</strong>`);
+            map.setView([dev.latitude, dev.longitude], 14);
+        }
+
+        // Load existing geofence
+        try {
+            const gfData = await AegisAPI.geofences.get(selectedDevice);
+            if (gfData?.center_lat && gfData?.center_lng) {
+                document.getElementById('gfLat').value = gfData.center_lat;
+                document.getElementById('gfLng').value = gfData.center_lng;
+                document.getElementById('gfRadius').value = gfData.radius_meters || 500;
+                document.getElementById('radiusVal').textContent = `${gfData.radius_meters || 500} m`;
+                document.getElementById('geoStatusBadge').textContent = 'ARMED';
+                document.getElementById('geoStatusBadge').className = 'badge badge-green';
+                updateCirclePreview();
+            }
+        } catch {}
+    });
+
+    document.getElementById('useDeviceLocBtn').addEventListener('click', () => {
+        const dev = devices.find(d => d.device_id === selectedDevice);
+        if (dev?.latitude && dev?.longitude) {
+            document.getElementById('gfLat').value = dev.latitude;
+            document.getElementById('gfLng').value = dev.longitude;
+            updateCirclePreview();
+        } else showToast('No location data for selected device', 'warning');
+    });
+
+    document.getElementById('useMapCenterBtn').addEventListener('click', () => {
+        const c = map.getCenter();
+        document.getElementById('gfLat').value = c.lat.toFixed(6);
+        document.getElementById('gfLng').value = c.lng.toFixed(6);
+        updateCirclePreview();
+    });
+
+    document.getElementById('setGeoBtn').addEventListener('click', async () => {
+        if (!selectedDevice) { showToast('Select a device first', 'warning'); return; }
+        const lat = parseFloat(document.getElementById('gfLat').value);
+        const lng = parseFloat(document.getElementById('gfLng').value);
+        const r   = parseInt(document.getElementById('gfRadius').value);
+        if (isNaN(lat) || isNaN(lng)) { showToast('Enter valid coordinates', 'warning'); return; }
+        try {
+            await AegisAPI.geofences.set(selectedDevice, { center_lat: lat, center_lng: lng, radius_meters: r });
+            document.getElementById('geoStatusBadge').textContent = 'ARMED';
+            document.getElementById('geoStatusBadge').className = 'badge badge-green';
+            showToast('Geofence armed successfully', 'success');
+            updateCirclePreview();
+        } catch(e) { showToast(AegisAPI.formatError(e), 'danger'); }
+    });
+
+    document.getElementById('clearGeoBtn').addEventListener('click', async () => {
+        if (!selectedDevice) return;
+        if (!confirm('Clear geofence for this device?')) return;
+        try {
+            await AegisAPI.geofences.clear(selectedDevice);
+            if (geoCircle) { map.removeLayer(geoCircle); geoCircle = null; }
+            ['gfLat','gfLng'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('gfRadius').value = 500;
+            document.getElementById('radiusVal').textContent = '500 m';
+            document.getElementById('geoStatusBadge').textContent = 'INACTIVE';
+            document.getElementById('geoStatusBadge').className = 'badge badge-muted';
+            showToast('Geofence cleared', 'success');
+        } catch(e) { showToast(AegisAPI.formatError(e), 'danger'); }
+    });
+
+    // Responsive
+    if (window.innerWidth < 768) {
+        document.getElementById('geoLayout').style.gridTemplateColumns = '1fr';
+    }
+
+    loadDeviceList();
+})();
+</script>
+</body>
+</html>

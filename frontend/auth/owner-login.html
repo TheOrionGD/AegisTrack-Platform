@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Device Owner Login</title>
+    <meta name="description" content="Device owner login portal for AegisTrack. Access your tracking status, consent management, and messaging.">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body class="auth-body">
+<div class="auth-shell">
+    <a href="login.html" class="auth-back"><i class="fa-solid fa-arrow-left"></i> Back to role selector</a>
+
+    <div class="auth-card">
+        <div class="auth-brand">
+            <div class="auth-logo" style="background:linear-gradient(135deg,var(--accent-cyan),#006eaa);">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+            </div>
+            <h1>Device Owner Login</h1>
+            <p>Sign in to view and manage your devices</p>
+        </div>
+
+        <form class="auth-form" id="ownerLoginForm" novalidate>
+            <div id="authError" class="auth-error hidden">
+                <i class="fa-solid fa-circle-xmark"></i>
+                <span id="authErrorText">Invalid credentials</span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email or Username</label>
+                <div class="form-input-icon-wrapper">
+                    <i class="fa-solid fa-envelope input-icon"></i>
+                    <input class="form-input" type="text" id="email" name="email"
+                        placeholder="Enter your email or username" autocomplete="username" required autofocus>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <div class="password-wrapper">
+                    <input class="form-input" type="password" id="password" name="password"
+                        placeholder="Enter your password" autocomplete="current-password" required>
+                    <button type="button" class="show-password-btn" id="showPwd" aria-label="Show password">
+                        <i class="fa-solid fa-eye" id="showPwdIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-cyan btn-full btn-lg auth-submit" id="loginBtn">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In to Owner Portal
+            </button>
+        </form>
+
+        <div class="auth-divider"><span>Don't have an account?</span></div>
+
+        <div style="text-align:center;">
+            <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-3);">
+                Your account is created when you register a device via a tracking consent link from your operator.
+            </p>
+            <a href="login.html" class="btn btn-secondary btn-full">
+                <i class="fa-solid fa-user-shield"></i> Login as Operator Instead
+            </a>
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top:var(--space-5);">
+        <a href="../landing-page.html" style="font-size:var(--text-xs);color:var(--text-muted);display:inline-flex;align-items:center;gap:var(--space-1);">
+            <i class="fa-solid fa-satellite-dish"></i> AegisTrack CDEAS
+        </a>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script>
+(async () => {
+    // Redirect if already logged in as owner
+    if (AegisAuth.isLoggedIn() && AegisAuth.isOwner()) {
+        window.location.href = '../owner/dashboard.html';
+        return;
+    }
+
+    const showPwdBtn  = document.getElementById('showPwd');
+    const showPwdIcon = document.getElementById('showPwdIcon');
+    const pwdInput    = document.getElementById('password');
+    showPwdBtn.addEventListener('click', () => {
+        const isText = pwdInput.type === 'text';
+        pwdInput.type = isText ? 'password' : 'text';
+        showPwdIcon.className = `fa-solid ${isText ? 'fa-eye' : 'fa-eye-slash'}`;
+    });
+
+    const form     = document.getElementById('ownerLoginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const errBox   = document.getElementById('authError');
+    const errText  = document.getElementById('authErrorText');
+
+    function showError(msg) { errText.textContent = msg; errBox.classList.remove('hidden'); }
+    function clearError()   { errBox.classList.add('hidden'); }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearError();
+        const email    = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        if (!email || !password) { showError('Please enter your email/username and password'); return; }
+
+        loginBtn.classList.add('btn-loading');
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating…';
+
+        const result = await AegisAuth.loginOwner(email, password);
+
+        loginBtn.classList.remove('btn-loading');
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In to Owner Portal';
+
+        if (result.success) {
+            showToast('Welcome back!', 'success', 2000);
+            setTimeout(() => { window.location.href = '../owner/dashboard.html'; }, 600);
+        } else {
+            showError(result.error || 'Authentication failed. Check your credentials.');
+        }
+    });
+})();
+</script>
+</body>
+</html>

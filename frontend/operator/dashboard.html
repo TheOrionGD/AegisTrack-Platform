@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Operator Dashboard</title>
+    <meta name="description" content="AegisTrack operator control dashboard with live KPIs, device activity, and pipeline status.">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/operator-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" referrerpolicy="no-referrer">
+</head>
+<body>
+<div class="op-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+        <!-- Topbar -->
+        <header class="topbar" id="topbar"></header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p class="page-subtitle" id="dashGreeting">Good morning, Operator · <span id="dashDate"></span></p>
+                </div>
+                <div class="quick-actions">
+                    <a href="tracking-requests.html" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-paper-plane"></i> New Request
+                    </a>
+                    <a href="live-monitor.html" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-map-location-dot"></i> Live Monitor
+                    </a>
+                    <a href="communications.html" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-comments"></i> Messages
+                    </a>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid" id="kpiGrid">
+                <div class="kpi-card-op" id="kpiDevices">
+                    <div class="kpi-top">
+                        <div>
+                            <div class="kpi-value" id="kpiDeviceVal"><span class="skeleton" style="width:40px;height:32px;display:inline-block;border-radius:4px;"></span></div>
+                            <div class="kpi-label">Active Devices</div>
+                        </div>
+                        <div class="kpi-icon-box kpi-icon-green"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                    </div>
+                    <div class="kpi-trend"><i class="fa-solid fa-circle" style="font-size:6px;color:var(--accent-green);"></i> Tracking now</div>
+                </div>
+                <div class="kpi-card-op" id="kpiOwners">
+                    <div class="kpi-top">
+                        <div>
+                            <div class="kpi-value" id="kpiOwnerVal"><span class="skeleton" style="width:40px;height:32px;display:inline-block;border-radius:4px;"></span></div>
+                            <div class="kpi-label">Enrolled Owners</div>
+                        </div>
+                        <div class="kpi-icon-box kpi-icon-cyan"><i class="fa-solid fa-users"></i></div>
+                    </div>
+                    <div class="kpi-trend"><i class="fa-solid fa-arrow-trend-up" style="color:var(--accent-green);"></i> Registered owners</div>
+                </div>
+                <div class="kpi-card-op" id="kpiRequests">
+                    <div class="kpi-top">
+                        <div>
+                            <div class="kpi-value" id="kpiReqVal"><span class="skeleton" style="width:40px;height:32px;display:inline-block;border-radius:4px;"></span></div>
+                            <div class="kpi-label">Tracking Requests</div>
+                        </div>
+                        <div class="kpi-icon-box kpi-icon-warn"><i class="fa-solid fa-paper-plane"></i></div>
+                    </div>
+                    <div class="kpi-trend"><i class="fa-solid fa-clock" style="color:var(--color-warning);"></i> Total issued</div>
+                </div>
+                <div class="kpi-card-op" id="kpiAlerts">
+                    <div class="kpi-top">
+                        <div>
+                            <div class="kpi-value" id="kpiAlertVal"><span class="skeleton" style="width:40px;height:32px;display:inline-block;border-radius:4px;"></span></div>
+                            <div class="kpi-label">Active Alerts</div>
+                        </div>
+                        <div class="kpi-icon-box kpi-icon-danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    </div>
+                    <div class="kpi-trend"><i class="fa-solid fa-bell" style="color:var(--color-danger);"></i> Requires attention</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Main Column -->
+                <div class="dashboard-main">
+                    <!-- Mini Map -->
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h3><i class="fa-solid fa-map-location-dot"></i> Device Overview Map</h3>
+                            <a href="live-monitor.html" class="btn btn-secondary btn-sm">Full Monitor <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                        <div id="dashMap" class="mini-map-container" style="height:260px;border-radius:0;border:none;"></div>
+                    </div>
+
+                    <!-- Pipeline -->
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h3><i class="fa-solid fa-bars-progress"></i> Request Pipeline</h3>
+                            <a href="tracking-requests.html" class="btn btn-secondary btn-sm">View All</a>
+                        </div>
+                        <div class="section-card-body">
+                            <div class="pipeline-grid">
+                                <div class="pipeline-col">
+                                    <div class="pipeline-col-header" style="color:var(--color-warning);">
+                                        <span>PENDING</span>
+                                        <span class="badge badge-warning" id="pendingCount">0</span>
+                                    </div>
+                                    <div class="pipeline-items" id="pipelinePending">
+                                        <div style="font-size:var(--text-xs);color:var(--text-muted);text-align:center;padding:var(--space-4);">None</div>
+                                    </div>
+                                </div>
+                                <div class="pipeline-col">
+                                    <div class="pipeline-col-header" style="color:var(--accent-cyan);">
+                                        <span>LINK SENT</span>
+                                        <span class="badge badge-cyan" id="sentCount">0</span>
+                                    </div>
+                                    <div class="pipeline-items" id="pipelineSent">
+                                        <div style="font-size:var(--text-xs);color:var(--text-muted);text-align:center;padding:var(--space-4);">None</div>
+                                    </div>
+                                </div>
+                                <div class="pipeline-col">
+                                    <div class="pipeline-col-header" style="color:var(--accent-green);">
+                                        <span>REGISTERED</span>
+                                        <span class="badge badge-green" id="regCount">0</span>
+                                    </div>
+                                    <div class="pipeline-items" id="pipelineReg">
+                                        <div style="font-size:var(--text-xs);color:var(--text-muted);text-align:center;padding:var(--space-4);">None</div>
+                                    </div>
+                                </div>
+                                <div class="pipeline-col">
+                                    <div class="pipeline-col-header" style="color:var(--accent-green);">
+                                        <span>ACTIVE</span>
+                                        <span class="badge badge-green" id="activeCount">0</span>
+                                    </div>
+                                    <div class="pipeline-items" id="pipelineActive">
+                                        <div style="font-size:var(--text-xs);color:var(--text-muted);text-align:center;padding:var(--space-4);">None</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Side Column -->
+                <div class="dashboard-side">
+                    <!-- Recent Activity -->
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h3><i class="fa-solid fa-timeline"></i> Recent Activity</h3>
+                        </div>
+                        <div class="section-card-body" style="padding:0;">
+                            <div class="activity-feed" id="activityFeed">
+                                <div class="empty-state" style="padding:var(--space-8);">
+                                    <i class="fa-solid fa-satellite-dish"></i>
+                                    <p>Connecting to activity stream…</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alert Snapshot -->
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h3><i class="fa-solid fa-triangle-exclamation"></i> Recent Alerts</h3>
+                            <span class="badge badge-danger" id="alertBadge" style="display:none;"></span>
+                        </div>
+                        <div class="section-card-body" style="padding:0;">
+                            <div id="alertSnapshot" style="max-height:200px;overflow-y:auto;">
+                                <div class="empty-state" style="padding:var(--space-6);">
+                                    <i class="fa-solid fa-check-circle" style="color:var(--accent-green);"></i>
+                                    <p>No active alerts</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" referrerpolicy="no-referrer"></script>
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/operator-portal.js"></script>
+<script>
+(async () => {
+    await initOperatorPortal('Dashboard');
+
+    // Greeting & date
+    const hr = new Date().getHours();
+    const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+    const identity = AegisAuth.getIdentity() || 'Operator';
+    document.getElementById('dashGreeting').innerHTML = `${greet}, ${identity} · <span id="dashDate"></span>`;
+    document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
+
+    // Load KPIs
+    async function loadKPIs() {
+        try {
+            const data = await AegisAPI.dashboard.summary();
+            document.getElementById('kpiDeviceVal').textContent = data.activeDevices ?? '—';
+            document.getElementById('kpiOwnerVal').textContent  = data.owners ?? data.enrolledOwners ?? '—';
+            document.getElementById('kpiReqVal').textContent    = data.trackingRequests ?? '—';
+            document.getElementById('kpiAlertVal').textContent  = data.alerts ?? '—';
+
+            if ((data.alerts || 0) > 0) {
+                const badge = document.getElementById('alertBadge');
+                badge.textContent = data.alerts;
+                badge.style.display = '';
+            }
+        } catch(e) {
+            ['kpiDeviceVal','kpiOwnerVal','kpiReqVal','kpiAlertVal'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '—';
+            });
+        }
+    }
+
+    // Load Pipeline
+    async function loadPipeline() {
+        try {
+            const data = await AegisAPI.tracking.list();
+            const requests = data.requests || data.tracking_requests || [];
+            const groups = { PENDING: [], LINK_GENERATED: [], REGISTERED: [], TRACKING_ACTIVE: [] };
+
+            requests.forEach(r => {
+                const s = r.status || 'PENDING';
+                if (s.includes('PENDING') || s.includes('LINK_COPIED') || s.includes('WHATSAPP') || s.includes('EMAIL')) groups.PENDING.push(r);
+                else if (s.includes('LINK_GENERATED')) groups.LINK_GENERATED.push(r);
+                else if (s.includes('REGISTERED') || s.includes('CONSENT_GRANTED')) groups.REGISTERED.push(r);
+                else if (s.includes('ACTIVE') || s.includes('TRACKING')) groups.TRACKING_ACTIVE.push(r);
+            });
+
+            function renderItems(elId, items) {
+                const el = document.getElementById(elId);
+                if (!el) return;
+                if (!items.length) { el.innerHTML = '<div style="font-size:var(--text-xs);color:var(--text-muted);text-align:center;padding:var(--space-4);">None</div>'; return; }
+                el.innerHTML = items.slice(0, 3).map(r =>
+                    `<div class="pipeline-item"><div class="p-name">${r.owner_name || r.phone_number || '—'}</div><div class="p-meta">${r.phone_number || ''}</div></div>`
+                ).join('');
+            }
+
+            renderItems('pipelinePending', groups.PENDING);
+            renderItems('pipelineSent', groups.LINK_GENERATED);
+            renderItems('pipelineReg', groups.REGISTERED);
+            renderItems('pipelineActive', groups.TRACKING_ACTIVE);
+
+            document.getElementById('pendingCount').textContent = groups.PENDING.length;
+            document.getElementById('sentCount').textContent    = groups.LINK_GENERATED.length;
+            document.getElementById('regCount').textContent     = groups.REGISTERED.length;
+            document.getElementById('activeCount').textContent  = groups.TRACKING_ACTIVE.length;
+        } catch(e) {}
+    }
+
+    // Init mini map
+    function initDashMap() {
+        const mapEl = document.getElementById('dashMap');
+        if (!mapEl || !window.L) return;
+        try {
+            const map = L.map('dashMap', { zoomControl: false, attributionControl: false }).setView([20.5937, 78.9629], 4);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+            // Load device locations and add pins
+            AegisAPI.locations.allLatest().then(data => {
+                const locs = data.locations || [];
+                locs.forEach(loc => {
+                    if (!loc.latitude || !loc.longitude) return;
+                    const marker = L.circleMarker([loc.latitude, loc.longitude], {
+                        radius: 8, fillColor: '#00ff88', color: '#00ff88',
+                        weight: 2, opacity: 0.8, fillOpacity: 0.6
+                    }).addTo(map);
+                    marker.bindTooltip(`${loc.owner_name || loc.device_id}`);
+                });
+                if (locs.length) {
+                    const group = L.featureGroup(locs.map(l => L.circleMarker([l.latitude, l.longitude])));
+                    try { map.fitBounds(group.getBounds().pad(0.3)); } catch {}
+                }
+            }).catch(() => {});
+        } catch(e) {}
+    }
+
+    // Activity Feed
+    function addActivity(text, type = 'info', time = null) {
+        const feed = document.getElementById('activityFeed');
+        if (!feed) return;
+        const emptyState = feed.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+
+        const dotClass = type === 'success' ? 'activity-dot-green' : type === 'warning' ? 'activity-dot-warn' : type === 'danger' ? 'activity-dot-danger' : '';
+        const item = document.createElement('div');
+        item.className = 'activity-item';
+        item.innerHTML = `
+            <div class="activity-dot ${dotClass}"></div>
+            <div class="activity-text">${text}</div>
+            <div class="activity-time">${time || timeAgo(new Date())}</div>
+        `;
+        feed.insertBefore(item, feed.firstChild);
+        // Keep max 20 items
+        while (feed.children.length > 20) feed.removeChild(feed.lastChild);
+    }
+
+    // WS activity events
+    AegisWS.on('location_update', (p) => addActivity(`<strong>${p.device_id || 'Device'}</strong> location updated`, 'success'));
+    AegisWS.on('status_updated', (p) => {
+        const s = p.tracking_status || p.status;
+        const type = s === 'TRACKING_ACTIVE' ? 'success' : s === 'REVOKED' ? 'danger' : 'warning';
+        addActivity(`<strong>${p.device_id || 'Device'}</strong> status changed to <strong>${s}</strong>`, type);
+    });
+    AegisWS.on('geofence_breach', (p) => addActivity(`<strong>Geofence breach</strong> detected for ${p.device_id || 'a device'}`, 'danger'));
+
+    // Initial activity seed
+    addActivity('Operator portal session started', 'info');
+    addActivity('WebSocket connecting to telemetry stream…', 'info');
+
+    // Load data
+    loadKPIs();
+    loadPipeline();
+    initDashMap();
+
+    // Auto-refresh every 60s
+    setInterval(() => { loadKPIs(); loadPipeline(); }, 60000);
+})();
+</script>
+</body>
+</html>

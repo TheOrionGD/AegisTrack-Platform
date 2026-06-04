@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Owner Settings</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/owner-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body class="owner-shell">
+    <header class="owner-topbar" id="ownerTopbar"></header>
+    <main class="owner-content">
+        <div class="page-header" style="margin-bottom:var(--space-5);">
+            <h1>Settings</h1>
+            <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-top:4px;">Account, notifications, and preferences</p>
+        </div>
+
+        <!-- Account Card -->
+        <div class="section-card" style="margin-bottom:var(--space-4);">
+            <div class="section-card-header"><h3><i class="fa-solid fa-user"></i> Account</h3></div>
+            <div class="section-card-body">
+                <div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-5);">
+                    <div id="ownerSettingAvatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-green));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--text-inverse);">?</div>
+                    <div>
+                        <div style="font-size:var(--text-xl);font-weight:700;" id="ownerDisplayName">—</div>
+                        <div class="badge badge-cyan" style="margin-top:4px;">Device Owner</div>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+                    <div class="form-group">
+                        <label class="form-label">Username / Email</label>
+                        <input class="form-input" id="ownerUsername" type="text" readonly style="cursor:default;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <input class="form-input" value="DEVICE_OWNER" readonly style="cursor:default;color:var(--accent-cyan);">
+                    </div>
+                </div>
+                <button class="btn btn-danger btn-sm" id="ownerLogoutBtn" style="margin-top:var(--space-4);">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                </button>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="section-card" style="margin-bottom:var(--space-4);">
+            <div class="section-card-header"><h3><i class="fa-solid fa-bell"></i> Notifications</h3></div>
+            <div class="section-card-body" style="display:flex;flex-direction:column;gap:var(--space-3);">
+                <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+                    <div>
+                        <div style="font-size:var(--text-sm);font-weight:500;">New Operator Messages</div>
+                        <div style="font-size:var(--text-xs);color:var(--text-muted);">Get notified when your operator sends a message</div>
+                    </div>
+                    <input type="checkbox" id="notifMessages" checked style="accent-color:var(--accent-cyan);width:20px;height:20px;flex-shrink:0;">
+                </label>
+                <div style="height:1px;background:var(--border-soft);"></div>
+                <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+                    <div>
+                        <div style="font-size:var(--text-sm);font-weight:500;">Geofence Alerts</div>
+                        <div style="font-size:var(--text-xs);color:var(--text-muted);">Notify when your device exits a geofence zone</div>
+                    </div>
+                    <input type="checkbox" id="notifGeofence" checked style="accent-color:var(--accent-cyan);width:20px;height:20px;flex-shrink:0;">
+                </label>
+                <div style="height:1px;background:var(--border-soft);"></div>
+                <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+                    <div>
+                        <div style="font-size:var(--text-sm);font-weight:500;">Consent Status Changes</div>
+                        <div style="font-size:var(--text-xs);color:var(--text-muted);">Notify when tracking status changes</div>
+                    </div>
+                    <input type="checkbox" id="notifConsent" checked style="accent-color:var(--accent-cyan);width:20px;height:20px;flex-shrink:0;">
+                </label>
+            </div>
+        </div>
+
+        <!-- About / Version -->
+        <div class="section-card">
+            <div class="section-card-header"><h3><i class="fa-solid fa-circle-info"></i> About</h3></div>
+            <div class="section-card-body">
+                <div style="display:flex;flex-direction:column;gap:var(--space-3);font-size:var(--text-sm);">
+                    <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">Platform</span><span>AegisTrack CDEAS</span></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">Version</span><span style="font-family:var(--font-mono);">v2.0.0</span></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">Your Role</span><span class="badge badge-cyan">DEVICE_OWNER</span></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">Session</span><span id="ownerSessionExp" style="font-size:var(--text-xs);">—</span></div>
+                </div>
+                <div style="margin-top:var(--space-5);">
+                    <a href="../landing-page.html" class="btn btn-ghost btn-full btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Landing Page</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/owner-portal.js"></script>
+<script>
+(async () => {
+    await initOwnerPortal('Settings');
+
+    const identity = AegisAuth.getIdentity() || '—';
+    document.getElementById('ownerDisplayName').textContent = identity;
+    document.getElementById('ownerUsername').value = identity;
+    document.getElementById('ownerSettingAvatar').textContent = getAvatarInitials(identity);
+
+    const user = AegisAuth.getUser();
+    if (user?.exp) {
+        document.getElementById('ownerSessionExp').textContent = `Expires ${new Date(user.exp * 1000).toLocaleString()}`;
+    }
+
+    document.getElementById('ownerLogoutBtn').addEventListener('click', () => AegisAuth.logout());
+
+    // Save notification prefs
+    ['notifMessages','notifGeofence','notifConsent'].forEach(id => {
+        const el = document.getElementById(id);
+        const saved = localStorage.getItem(`aegis_owner_${id}`);
+        if (saved !== null) el.checked = saved === 'true';
+        el.addEventListener('change', () => {
+            localStorage.setItem(`aegis_owner_${id}`, el.checked);
+            showToast('Preference saved', 'success', 1500);
+        });
+    });
+})();
+</script>
+</body>
+</html>

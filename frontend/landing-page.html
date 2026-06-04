@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Consent-Based Device Intelligence Platform</title>
+    <meta name="description" content="AegisTrack CDEAS: Enterprise-grade consent-based device monitoring, real-time geofencing, AI-powered insights, and secure operator-owner communication.">
+    <meta property="og:title" content="AegisTrack — Consent-Based Device Intelligence">
+    <meta property="og:description" content="Monitor devices with full consent transparency, real-time geofencing, and AI assistance.">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="assets/css/landing.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body class="landing-body">
+
+<!-- ─── STICKY NAV ──────────────────────────────────────────── -->
+<nav class="land-nav" id="landNav">
+    <a href="#" class="nav-brand">
+        <div class="nav-logo"><i class="fa-solid fa-satellite-dish"></i></div>
+        <span class="nav-brand-name">AegisTrack</span>
+    </a>
+    <div class="nav-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#security" class="nav-link">Security</a>
+        <a href="#portals" class="nav-link">Portals</a>
+        <a href="#ai" class="nav-link">AI Assistant</a>
+    </div>
+    <div class="nav-ctas">
+        <a href="auth/operator-login.html" class="btn btn-secondary btn-sm hide-mobile">Operator Login</a>
+        <a href="auth/owner-login.html" class="btn btn-cyan btn-sm">Owner Login</a>
+    </div>
+    <button class="nav-menu-toggle" id="menuToggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+    </button>
+</nav>
+
+<!-- Mobile Nav Drawer -->
+<div id="mobileNav" class="hidden" style="position:fixed;inset:0;z-index:490;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);">
+    <div style="position:absolute;right:0;top:0;bottom:0;width:280px;background:var(--bg-surface);border-left:1px solid var(--border-soft);padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-2);animation:slideInRight .3s ease;">
+        <button id="closeMenu" style="align-self:flex-end;background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer;margin-bottom:var(--space-4);"><i class="fa-solid fa-xmark"></i></button>
+        <a href="#features" class="nav-link" onclick="closeMobileNav()">Features</a>
+        <a href="#how-it-works" class="nav-link" onclick="closeMobileNav()">How It Works</a>
+        <a href="#security" class="nav-link" onclick="closeMobileNav()">Security</a>
+        <a href="#portals" class="nav-link" onclick="closeMobileNav()">Portals</a>
+        <a href="#ai" class="nav-link" onclick="closeMobileNav()">AI Assistant</a>
+        <div style="height:1px;background:var(--border-soft);margin:var(--space-2) 0;"></div>
+        <a href="auth/operator-login.html" class="btn btn-secondary btn-full" style="margin-top:var(--space-2);">Operator Login</a>
+        <a href="auth/owner-login.html" class="btn btn-cyan btn-full" style="margin-top:var(--space-2);">Device Owner Login</a>
+    </div>
+</div>
+
+<!-- ─── HERO ────────────────────────────────────────────────── -->
+<section class="hero-section" id="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">
+            <i class="fa-solid fa-shield-halved"></i>
+            Consent-Based · RBAC-Secured · Enterprise-Grade
+        </div>
+        <h1 class="hero-title">
+            Device Intelligence<br>
+            <span class="highlight">With Full Consent</span>
+        </h1>
+        <p class="hero-subtitle">
+            AegisTrack combines real-time device monitoring, transparent consent management,
+            AI-powered insights, and secure operator–owner communication in one enterprise platform.
+        </p>
+        <div class="hero-ctas">
+            <a href="auth/operator-login.html" id="heroOpBtn" class="btn btn-primary btn-xl">
+                <i class="fa-solid fa-terminal"></i> Operator Portal
+            </a>
+            <a href="auth/owner-login.html" id="heroOwnerBtn" class="btn btn-cyan btn-xl">
+                <i class="fa-solid fa-mobile-screen-button"></i> Owner Portal
+            </a>
+            <a href="#how-it-works" class="btn btn-secondary btn-xl">
+                <i class="fa-solid fa-play"></i> See How It Works
+            </a>
+        </div>
+
+        <!-- Live map preview -->
+        <div class="hero-visual">
+            <div class="hero-map-preview">
+                <div class="map-mock">
+                    <div class="map-road map-road-h map-road-1"></div>
+                    <div class="map-road map-road-h map-road-2"></div>
+                    <div class="map-road map-road-h map-road-5"></div>
+                    <div class="map-road map-road-v map-road-3"></div>
+                    <div class="map-road map-road-v map-road-4"></div>
+                    <div class="device-pin">
+                        <div class="pin-ripple"></div>
+                        <div class="pin-ripple pin-ripple-2"></div>
+                        <div class="pin-ripple pin-ripple-3"></div>
+                        <div class="pin-center"></div>
+                    </div>
+                    <div class="map-hud">
+                        <div class="map-hud-badge"><i class="fa-solid fa-circle" style="font-size:8px;"></i> 3 Active Devices</div>
+                        <div class="map-hud-badge"><i class="fa-solid fa-draw-polygon"></i> Geofence Armed</div>
+                    </div>
+                    <div class="map-coord" id="mapCoordLive">12.9716° N, 77.5946° E</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── FEATURES ─────────────────────────────────────────────── -->
+<section class="land-section" id="features">
+    <div class="section-inner">
+        <div class="section-header">
+            <p class="eyebrow">Core Capabilities</p>
+            <h2>Everything You Need to Monitor Responsibly</h2>
+            <p>Built for enterprise security teams that demand transparency, auditability, and real-time intelligence.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon feature-icon-green">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <h3>Real-Time Tracking</h3>
+                <p>High-accuracy GPS via browser geolocation API with watchPosition, 30-second updates, and live coordinate streaming over WebSocket.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon feature-icon-cyan">
+                    <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <h3>Consent Management</h3>
+                <p>Full consent lifecycle: grant, pause, resume, and revoke. Every action is timestamped in encrypted audit logs. Owner always in control.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon feature-icon-warn">
+                    <i class="fa-solid fa-draw-polygon"></i>
+                </div>
+                <h3>Smart Geofencing</h3>
+                <p>Draw circular geofence zones on a live map. Real-time breach detection with instant WebSocket notifications to operators.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon feature-icon-cyan">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <h3>Communication Hub</h3>
+                <p>Real-time operator ↔ owner messaging with device-specific conversation threads, read receipts, and typing indicators.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon feature-icon-green">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <h3>AI Assistant</h3>
+                <p>Intelligent assistants for both operators and device owners. Query location data, generate reports, and get risk analysis in natural language.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon feature-icon-warn">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                </div>
+                <h3>Multi-Device Support</h3>
+                <p>One owner account can register and manage multiple devices — each with independent tracking status, consent, and conversation history.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── HOW IT WORKS ─────────────────────────────────────────── -->
+<section class="land-section how-bg" id="how-it-works">
+    <div class="section-inner">
+        <div class="section-header">
+            <p class="eyebrow">Workflow</p>
+            <h2>From Request to Live Monitoring in Minutes</h2>
+            <p>A secure, transparent enrollment flow that puts the device owner in control at every step.</p>
+        </div>
+        <div class="steps-flow">
+            <div class="step-card">
+                <div class="step-num">1</div>
+                <h3>Operator Creates Request</h3>
+                <p>Operator generates a secure, time-limited consent link with tracking purpose, duration, and organisation details.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">2</div>
+                <h3>Owner Receives Link</h3>
+                <p>Sent via WhatsApp, email, or QR code. Owner reviews the full consent agreement including what data is collected and why.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">3</div>
+                <h3>Owner Registers & Consents</h3>
+                <p>Owner creates an account, registers their device, and explicitly grants consent. Credentials are securely hashed and stored.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">4</div>
+                <h3>Live Monitoring Begins</h3>
+                <p>GPS tracking activates. Operator sees the device on the live map. Owner can pause or revoke consent at any time.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── SECURITY ─────────────────────────────────────────────── -->
+<section class="land-section security-bg" id="security">
+    <div class="section-inner">
+        <div class="section-header">
+            <p class="eyebrow">Security First</p>
+            <h2>Enterprise-Grade Security at Every Layer</h2>
+            <p>Built with cybersecurity as the foundation, not an afterthought.</p>
+        </div>
+        <div class="security-grid">
+            <div class="security-card">
+                <i class="fa-solid fa-shield-halved security-icon"></i>
+                <h3>JWT RBAC</h3>
+                <p>Role-Based Access Control with separate JWT claims for operators and device owners. Routes are server-enforced.</p>
+            </div>
+            <div class="security-card">
+                <i class="fa-solid fa-lock security-icon"></i>
+                <h3>Encrypted Vaults</h3>
+                <p>All audit logs are encrypted using Fernet symmetric encryption with PBKDF2-derived keys before database storage.</p>
+            </div>
+            <div class="security-card">
+                <i class="fa-solid fa-key security-icon"></i>
+                <h3>Hashed Credentials</h3>
+                <p>Passwords are hashed with PBKDF2-SHA256. Plaintext credentials are never stored. Silent JWT refresh prevents re-login loops.</p>
+            </div>
+            <div class="security-card">
+                <i class="fa-solid fa-clock-rotate-left security-icon"></i>
+                <h3>Consent Audit Log</h3>
+                <p>Every consent action — grant, pause, resume, revoke — is timestamped, logged, and auditable by authorised operators.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── PORTALS ──────────────────────────────────────────────── -->
+<section class="land-section" id="portals">
+    <div class="section-inner">
+        <div class="section-header">
+            <p class="eyebrow">Two Portals. One Platform.</p>
+            <h2>Dedicated Experiences for Every Role</h2>
+            <p>Operators and device owners each get a tailored, mobile-first experience with no overlap in permissions.</p>
+        </div>
+        <div class="portals-grid">
+            <div class="portal-card portal-card-op">
+                <div class="portal-icon portal-icon-op">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h2>Operator Portal</h2>
+                <p class="portal-desc">Full-featured dashboard for monitoring, geofencing, communication, and consent management across all enrolled devices.</p>
+                <div class="portal-features">
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> KPI dashboard with live counts</div>
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> Multi-device live map monitor</div>
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> Consent request management</div>
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> Owner communication hub</div>
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> Geofence creation & alerts</div>
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> AI-powered risk analysis</div>
+                </div>
+                <a href="auth/operator-login.html" class="btn btn-primary btn-full">
+                    <i class="fa-solid fa-terminal"></i> Enter Operator Portal
+                </a>
+            </div>
+            <div class="portal-card portal-card-own">
+                <div class="portal-icon portal-icon-own">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                </div>
+                <h2>Device Owner Portal</h2>
+                <p class="portal-desc">Mobile-first self-service portal for device owners to view their tracking status, manage consent, chat with operators, and get AI help.</p>
+                <div class="portal-features">
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> Multi-device dashboard</div>
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> Live location view (own devices only)</div>
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> Pause / resume / revoke consent</div>
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> Operator messaging</div>
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> Consent audit timeline</div>
+                    <div class="portal-feature"><i class="fa-solid fa-check"></i> AI assistant for device queries</div>
+                </div>
+                <a href="auth/owner-login.html" class="btn btn-cyan btn-full">
+                    <i class="fa-solid fa-right-to-bracket"></i> Enter Owner Portal
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── AI ASSISTANT ─────────────────────────────────────────── -->
+<section class="land-section" id="ai">
+    <div class="section-inner">
+        <div class="ai-layout">
+            <div>
+                <p class="eyebrow">AI-Powered</p>
+                <h2 style="font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-0.02em;margin-bottom:var(--space-4);">Ask MTS AI Anything</h2>
+                <p style="color:var(--text-secondary);font-size:var(--text-md);line-height:1.7;margin-bottom:var(--space-6);">Both operators and device owners get dedicated AI assistants that understand your data, answer questions in natural language, and help you take action instantly.</p>
+                <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+                    <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);background:var(--bg-surface);border:1px solid var(--border-soft);border-radius:var(--radius-lg);">
+                        <i class="fa-solid fa-location-dot" style="color:var(--accent-green);width:20px;"></i>
+                        <span style="font-size:var(--text-sm);color:var(--text-secondary);">"Where is my device right now?"</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);background:var(--bg-surface);border:1px solid var(--border-soft);border-radius:var(--radius-lg);">
+                        <i class="fa-solid fa-chart-line" style="color:var(--accent-cyan);width:20px;"></i>
+                        <span style="font-size:var(--text-sm);color:var(--text-secondary);">"Summarise alerts from the last 24 hours"</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);background:var(--bg-surface);border:1px solid var(--border-soft);border-radius:var(--radius-lg);">
+                        <i class="fa-solid fa-ban" style="color:var(--color-warning);width:20px;"></i>
+                        <span style="font-size:var(--text-sm);color:var(--text-secondary);">"How do I revoke my consent?"</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ai-chat-mock">
+                <div class="ai-chat-header">
+                    <div class="ai-avatar"><i class="fa-solid fa-robot"></i></div>
+                    <div>
+                        <div style="font-size:var(--text-sm);font-weight:700;">MTS AI Assistant</div>
+                        <div style="font-size:var(--text-xs);color:var(--accent-green);display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:var(--accent-green);border-radius:50%;display:inline-block;"></span> Online</div>
+                    </div>
+                </div>
+                <div class="ai-chat-body" id="aiChatBody">
+                    <div class="ai-msg ai">
+                        <div class="ai-avatar" style="width:28px;height:28px;font-size:12px;flex-shrink:0;align-self:flex-end;"><i class="fa-solid fa-robot"></i></div>
+                        <div class="ai-bubble">Hi! I'm your MTS AI assistant. Ask me anything about your devices, tracking status, or consent management.</div>
+                    </div>
+                </div>
+                <div style="padding:var(--space-3) var(--space-4);border-top:1px solid var(--border-soft);display:flex;gap:var(--space-2);">
+                    <input id="aiDemoInput" type="text" placeholder="Ask MTS AI..." style="flex:1;background:var(--bg-elevated);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:0 var(--space-3);height:38px;color:var(--text-primary);font-size:var(--text-sm);outline:none;font-family:var(--font-sans);">
+                    <button id="aiDemoSend" class="btn btn-cyan btn-sm btn-icon"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── CTA ──────────────────────────────────────────────────── -->
+<section class="cta-section">
+    <div class="cta-glow">
+        <p class="eyebrow" style="margin-bottom:var(--space-3);">Get Started Today</p>
+        <h2>Ready to Deploy AegisTrack?</h2>
+    </div>
+    <p>Choose your portal and get started in minutes. No setup fees. Full consent transparency from day one.</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:var(--space-4);flex-wrap:wrap;">
+        <a href="auth/operator-login.html" class="btn btn-primary btn-xl">
+            <i class="fa-solid fa-terminal"></i> Operator Login
+        </a>
+        <a href="auth/owner-login.html" class="btn btn-cyan btn-xl">
+            <i class="fa-solid fa-mobile-screen-button"></i> Device Owner Login
+        </a>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:var(--space-5);margin-top:var(--space-8);flex-wrap:wrap;">
+        <span style="font-size:var(--text-sm);color:var(--text-muted);display:flex;align-items:center;gap:var(--space-2);"><i class="fa-solid fa-shield-halved" style="color:var(--accent-cyan);"></i>Consent-first</span>
+        <span style="font-size:var(--text-sm);color:var(--text-muted);display:flex;align-items:center;gap:var(--space-2);"><i class="fa-solid fa-lock" style="color:var(--accent-cyan);"></i>Encrypted at rest</span>
+        <span style="font-size:var(--text-sm);color:var(--text-muted);display:flex;align-items:center;gap:var(--space-2);"><i class="fa-solid fa-bolt" style="color:var(--accent-cyan);"></i>Real-time WebSocket</span>
+        <span style="font-size:var(--text-sm);color:var(--text-muted);display:flex;align-items:center;gap:var(--space-2);"><i class="fa-solid fa-robot" style="color:var(--accent-cyan);"></i>AI-powered</span>
+    </div>
+</section>
+
+<!-- ─── FOOTER ───────────────────────────────────────────────── -->
+<footer class="land-footer">
+    <div class="footer-brand">
+        <div class="nav-logo" style="width:28px;height:28px;font-size:13px;"><i class="fa-solid fa-satellite-dish"></i></div>
+        <div>
+            <div style="font-size:var(--text-base);font-weight:800;">AegisTrack CDEAS</div>
+            <div style="font-size:var(--text-xs);color:var(--text-muted);">Consent-Based Device Enrollment & Auditing System</div>
+        </div>
+    </div>
+    <div class="footer-badges">
+        <div class="footer-badge"><i class="fa-solid fa-shield-halved"></i> RBAC Secured</div>
+        <div class="footer-badge"><i class="fa-solid fa-draw-polygon"></i> Real-Time Geofencing</div>
+        <div class="footer-badge"><i class="fa-solid fa-lock"></i> Encrypted Vault</div>
+        <div class="footer-badge"><i class="fa-solid fa-gauge-high"></i> WebSocket Live</div>
+        <div class="footer-badge"><i class="fa-solid fa-robot"></i> AI Assistant</div>
+    </div>
+    <div class="footer-copy">© 2025 AegisTrack MTS Cybersecurity Core</div>
+</footer>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="js/config.js"></script>
+<script>
+    // ── Scrolled Nav Effect ──
+    const nav = document.getElementById('landNav');
+    window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    // ── Mobile Nav ──
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileNav  = document.getElementById('mobileNav');
+    const closeMenu  = document.getElementById('closeMenu');
+    menuToggle.addEventListener('click', () => mobileNav.classList.remove('hidden'));
+    closeMenu.addEventListener('click',  () => mobileNav.classList.add('hidden'));
+    mobileNav.addEventListener('click', (e) => { if(e.target === mobileNav) mobileNav.classList.add('hidden'); });
+    function closeMobileNav() { mobileNav.classList.add('hidden'); }
+
+    // ── Smooth scroll for nav links ──
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const id = a.getAttribute('href').slice(1);
+            const el = document.getElementById(id);
+            if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); closeMobileNav(); }
+        });
+    });
+
+    // ── Intersection Observer Animations ──
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'fadeIn 0.6s ease forwards';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.feature-card, .step-card, .security-card, .portal-card').forEach(el => {
+        el.style.opacity = '0';
+        observer.observe(el);
+    });
+
+    // ── Animated Map Coordinates ──
+    const baseLat = 12.9716, baseLng = 77.5946;
+    const coordEl = document.getElementById('mapCoordLive');
+    setInterval(() => {
+        const lat = (baseLat + (Math.random() - 0.5) * 0.002).toFixed(4);
+        const lng = (baseLng + (Math.random() - 0.5) * 0.002).toFixed(4);
+        if (coordEl) coordEl.textContent = `${lat}° N, ${lng}° E`;
+    }, 3000);
+
+    // ── AI Demo Chat ──
+    const aiChatBody = document.getElementById('aiChatBody');
+    const aiInput    = document.getElementById('aiDemoInput');
+    const aiSend     = document.getElementById('aiDemoSend');
+
+    const demoResponses = {
+        default: ["I can help you with device tracking, consent management, geofencing, and more. Log in to your portal to get started!", "For live device data, please log in to your Owner or Operator portal.", "AegisTrack provides real-time GPS tracking with full consent transparency."],
+        location: ["Your device's last known location is: 12.9716° N, 77.5946° E (Demo data). Log in for live tracking!", "Live coordinates are available in your Owner Portal. Sign in to view your device's current position."],
+        consent: ["You can pause or revoke your consent at any time from the Owner Portal → Consent Management.", "Consent is always in your control. You can pause tracking temporarily or permanently revoke consent from your dashboard."],
+        tracking: ["Tracking is currently active for demonstration. Log in to see your real device status.", "Your tracking status and live coordinates are visible in the Owner Portal dashboard."],
+        devices: ["AegisTrack supports multiple devices per account. Each device has its own tracking status and conversation history."],
+    };
+
+    function getDemoResponse(input) {
+        const q = input.toLowerCase();
+        if (q.includes('location') || q.includes('where')) return demoResponses.location[Math.floor(Math.random() * demoResponses.location.length)];
+        if (q.includes('consent') || q.includes('revoke') || q.includes('pause')) return demoResponses.consent[Math.floor(Math.random() * demoResponses.consent.length)];
+        if (q.includes('track')) return demoResponses.tracking[Math.floor(Math.random() * demoResponses.tracking.length)];
+        if (q.includes('device')) return demoResponses.devices[0];
+        return demoResponses.default[Math.floor(Math.random() * demoResponses.default.length)];
+    }
+
+    function addAiMsg(text, isUser) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `ai-msg ${isUser ? 'user' : 'ai'}`;
+        const avatarHtml = isUser
+            ? `<div style="width:28px;height:28px;border-radius:50%;background:var(--accent-cyan-dim);border:1px solid rgba(0,194,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--accent-cyan);flex-shrink:0;align-self:flex-end;"><i class="fa-solid fa-user"></i></div>`
+            : `<div class="ai-avatar" style="width:28px;height:28px;font-size:12px;flex-shrink:0;align-self:flex-end;"><i class="fa-solid fa-robot"></i></div>`;
+        msgDiv.innerHTML = `${isUser ? '' : avatarHtml}<div class="ai-bubble">${text}</div>${isUser ? avatarHtml : ''}`;
+        aiChatBody.appendChild(msgDiv);
+        aiChatBody.scrollTop = aiChatBody.scrollHeight;
+    }
+
+    function sendAiDemo() {
+        const q = aiInput.value.trim();
+        if (!q) return;
+        addAiMsg(q, true);
+        aiInput.value = '';
+        // Show typing indicator
+        const typing = document.createElement('div');
+        typing.className = 'ai-msg ai';
+        typing.id = 'typingIndicator';
+        typing.innerHTML = `<div class="ai-avatar" style="width:28px;height:28px;font-size:12px;flex-shrink:0;align-self:flex-end;"><i class="fa-solid fa-robot"></i></div><div class="ai-typing"><span></span><span></span><span></span></div>`;
+        aiChatBody.appendChild(typing);
+        aiChatBody.scrollTop = aiChatBody.scrollHeight;
+        setTimeout(() => {
+            const t = document.getElementById('typingIndicator');
+            if (t) t.remove();
+            addAiMsg(getDemoResponse(q), false);
+        }, 1200 + Math.random() * 800);
+    }
+
+    aiSend.addEventListener('click', sendAiDemo);
+    aiInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendAiDemo(); });
+</script>
+</body>
+</html>

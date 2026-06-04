@@ -1,0 +1,285 @@
+/**
+ * AegisTrack Auth Pages CSS
+ */
+@import url('../assets/css/design-system.css');
+
+.auth-body {
+    background: var(--bg-base);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Background grid */
+.auth-body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0,194,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,194,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+}
+
+/* Radial glow */
+.auth-body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(0,194,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* ─── AUTH SHELL ────────────────────────────────────────────── */
+.auth-shell {
+    width: 100%;
+    max-width: 460px;
+    position: relative;
+    z-index: 1;
+    animation: fadeInScale 0.4s ease;
+}
+
+.auth-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-8);
+    box-shadow: var(--shadow-lg), 0 0 60px rgba(0,194,255,0.04);
+}
+
+/* ─── AUTH BRAND ────────────────────────────────────────────── */
+.auth-brand {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.auth-logo {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--text-inverse);
+    margin: 0 auto var(--space-4);
+    box-shadow: 0 0 30px rgba(0,194,255,0.2);
+}
+
+.auth-brand h1 {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-1);
+}
+
+.auth-brand p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+/* ─── AUTH FORM ─────────────────────────────────────────────── */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.auth-error {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-danger-dim);
+    border: 1px solid rgba(255,68,68,0.25);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    color: var(--color-danger);
+    animation: fadeIn 0.3s ease;
+}
+
+.auth-submit {
+    margin-top: var(--space-2);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: var(--space-2) 0;
+}
+.auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-soft);
+}
+.auth-divider span {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: var(--space-5);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+.auth-footer a {
+    color: var(--accent-cyan);
+    font-weight: 500;
+    transition: color var(--transition-fast);
+}
+.auth-footer a:hover { color: var(--accent-green); }
+
+/* ─── ROLE SELECTOR ─────────────────────────────────────────── */
+.role-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+}
+
+.role-card {
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6) var(--space-5);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    background: var(--bg-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.role-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.role-card-op::before { background: radial-gradient(ellipse at top left, rgba(0,255,136,0.06), transparent 70%); }
+.role-card-own::before { background: radial-gradient(ellipse at top left, rgba(0,194,255,0.06), transparent 70%); }
+
+.role-card:hover::before { opacity: 1; }
+
+.role-card-op:hover  { border-color: rgba(0,255,136,0.4); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,255,136,0.08); }
+.role-card-own:hover { border-color: rgba(0,194,255,0.4); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,194,255,0.08); }
+
+.role-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    position: relative;
+    z-index: 1;
+}
+.role-icon-op  { background: var(--accent-green-dim); color: var(--accent-green); }
+.role-icon-own { background: var(--accent-cyan-dim);  color: var(--accent-cyan); }
+
+.role-card h3 {
+    font-size: var(--text-base);
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+
+.role-card p {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    position: relative;
+    z-index: 1;
+}
+
+.role-card .role-arrow {
+    margin-top: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    position: relative;
+    z-index: 1;
+    transition: color var(--transition-fast);
+}
+.role-card-op:hover  .role-arrow { color: var(--accent-green); }
+.role-card-own:hover .role-arrow { color: var(--accent-cyan); }
+
+/* ─── BACK LINK ─────────────────────────────────────────────── */
+.auth-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: var(--space-5);
+    transition: color var(--transition-fast);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+}
+.auth-back:hover { color: var(--text-primary); background: var(--bg-elevated); border-color: var(--border-soft); }
+
+/* ─── SHOW PASSWORD TOGGLE ──────────────────────────────────── */
+.password-wrapper {
+    position: relative;
+}
+.password-wrapper .form-input { padding-right: 44px; }
+.show-password-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    transition: color var(--transition-fast);
+    padding: var(--space-1);
+}
+.show-password-btn:hover { color: var(--text-primary); }
+
+/* ─── LOADING BUTTON STATE ──────────────────────────────────── */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.8;
+}
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@media (max-width: 480px) {
+    .auth-card { padding: var(--space-6) var(--space-5); }
+    .role-selector { grid-template-columns: 1fr; }
+}

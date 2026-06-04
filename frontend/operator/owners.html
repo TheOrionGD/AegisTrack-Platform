@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Owners</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/operator-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body>
+<div class="op-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+        <header class="topbar" id="topbar"></header>
+        <main class="main-content">
+            <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);">
+                <div>
+                    <h1>Device Owners</h1>
+                    <p class="page-subtitle">Registry of all enrolled device owners</p>
+                </div>
+                <div style="display:flex;gap:var(--space-3);">
+                    <button class="btn btn-secondary btn-sm" id="exportBtn"><i class="fa-solid fa-download"></i> Export</button>
+                    <button class="btn btn-primary btn-sm" id="refreshOwners"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h3><i class="fa-solid fa-users"></i> Owner Registry</h3>
+                    <span class="badge badge-cyan" id="ownerCount">0 owners</span>
+                </div>
+                <div style="padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:var(--space-3);">
+                    <div class="search-bar" style="flex:1;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Search by name, email, or device…" id="ownerSearch">
+                    </div>
+                    <select class="form-select" id="statusFilter" style="width:160px;">
+                        <option value="">All Statuses</option>
+                        <option value="TRACKING_ACTIVE">Active</option>
+                        <option value="PAUSED">Paused</option>
+                        <option value="REVOKED">Revoked</option>
+                    </select>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Owner</th>
+                                <th>Contact</th>
+                                <th>Devices</th>
+                                <th>Consent Status</th>
+                                <th>Last Active</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ownersTableBody">
+                            <tr><td colspan="6" style="text-align:center;padding:var(--space-10);color:var(--text-muted);">Loading owners…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-top:1px solid var(--border-soft);">
+                    <span style="font-size:var(--text-xs);color:var(--text-muted);" id="ownerPageInfo">—</span>
+                    <div style="display:flex;gap:var(--space-2);">
+                        <button class="btn btn-secondary btn-sm" id="prevPage" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                        <button class="btn btn-secondary btn-sm" id="nextPage" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/operator-portal.js"></script>
+<script>
+(async () => {
+    await initOperatorPortal('Owners');
+
+    let allOwners = [];
+    let page = 1;
+    const perPage = 15;
+
+    const statusColors = { TRACKING_ACTIVE:'badge-green', PAUSED:'badge-warning', REVOKED:'badge-danger', CONSENT_GRANTED:'badge-green' };
+
+    async function loadOwners() {
+        const tbody = document.getElementById('ownersTableBody');
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:var(--space-8);color:var(--text-muted);">Loading…</td></tr>';
+        try {
+            // Try dedicated owners endpoint; fall back to device registrations
+            let owners = [];
+            try {
+                const data = await AegisAPI.owners.list();
+                owners = data.owners || data || [];
+            } catch {
+                const data = await AegisAPI.get('/device-registrations');
+                owners = data.registrations || data.device_registrations || [];
+            }
+            allOwners = owners;
+            document.getElementById('ownerCount').textContent = `${owners.length} owner${owners.length !== 1 ? 's' : ''}`;
+            renderTable();
+        } catch(e) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:var(--space-8);color:var(--text-muted);">Unable to load owners. <button class="btn btn-ghost btn-sm" onclick="loadOwners()">Retry</button></td></tr>`;
+        }
+    }
+
+    function renderTable() {
+        const q      = document.getElementById('ownerSearch').value.toLowerCase();
+        const filter = document.getElementById('statusFilter').value;
+        let filtered = allOwners.filter(o => {
+            const matchQ = !q || (o.owner_name||'').toLowerCase().includes(q) || (o.owner_email||'').toLowerCase().includes(q) || (o.phone_number||'').toLowerCase().includes(q);
+            const matchS = !filter || (o.tracking_status||o.consent_status||'') === filter;
+            return matchQ && matchS;
+        });
+
+        const total  = filtered.length;
+        const pages  = Math.ceil(total / perPage);
+        const start  = (page - 1) * perPage;
+        const slice  = filtered.slice(start, start + perPage);
+
+        document.getElementById('ownerPageInfo').textContent = `Showing ${start+1}–${Math.min(start+perPage, total)} of ${total}`;
+        document.getElementById('prevPage').disabled = page <= 1;
+        document.getElementById('nextPage').disabled = page >= pages;
+
+        const tbody = document.getElementById('ownersTableBody');
+        if (!slice.length) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:var(--space-8);color:var(--text-muted);">No owners match the current filter.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = slice.map(o => {
+            const status = o.tracking_status || o.consent_status || '—';
+            const devices = o.device_count ?? (o.device_id ? '1' : '—');
+            return `<tr>
+                <td>
+                    <div style="display:flex;align-items:center;gap:var(--space-3);">
+                        <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-cyan-dim);color:var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">${getAvatarInitials(o.owner_name||'?')}</div>
+                        <div>
+                            <div style="font-weight:600;">${o.owner_name || '—'}</div>
+                            <div style="font-size:var(--text-xs);color:var(--text-muted);">${o.owner_username || ''}</div>
+                        </div>
+                    </div>
+                </td>
+                <td style="color:var(--text-secondary);font-size:var(--text-sm);">${o.owner_email || o.contact_email || o.phone_number || '—'}</td>
+                <td><span class="badge badge-muted">${devices} device${devices !== 1 ? 's' : ''}</span></td>
+                <td><span class="badge ${statusColors[status] || 'badge-muted'}">${status}</span></td>
+                <td style="color:var(--text-muted);font-size:var(--text-xs);">${o.last_updated ? timeAgo(o.last_updated) : '—'}</td>
+                <td>
+                    <div style="display:flex;gap:var(--space-1);">
+                        <a href="devices.html" class="btn btn-ghost btn-icon btn-icon-sm" title="View devices"><i class="fa-solid fa-mobile-screen-button"></i></a>
+                        <a href="communications.html" class="btn btn-ghost btn-icon btn-icon-sm" title="Send message"><i class="fa-solid fa-comment"></i></a>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    document.getElementById('ownerSearch').addEventListener('input', () => { page = 1; renderTable(); });
+    document.getElementById('statusFilter').addEventListener('change', () => { page = 1; renderTable(); });
+    document.getElementById('prevPage').addEventListener('click', () => { if (page > 1) { page--; renderTable(); } });
+    document.getElementById('nextPage').addEventListener('click', () => { page++; renderTable(); });
+    document.getElementById('refreshOwners').addEventListener('click', loadOwners);
+    document.getElementById('exportBtn').addEventListener('click', () => {
+        const csv = ['Owner Name,Email,Phone,Status,Last Active',
+            ...allOwners.map(o => `"${o.owner_name||''}","${o.owner_email||''}","${o.phone_number||''}","${o.tracking_status||''}","${o.last_updated||''}"`)
+        ].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        Object.assign(document.createElement('a'), { href: url, download: 'aegistrack_owners.csv' }).click();
+        URL.revokeObjectURL(url);
+    });
+
+    loadOwners();
+    setInterval(loadOwners, 60000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+/**
+ * AegisTrack Owner Portal CSS
+ * Mobile-first design for device owners.
+ */
+@import url('../assets/css/design-system.css');
+@import url('../assets/css/shared-nav.css');
+
+/* ─── DEVICE STATUS HERO ────────────────────────────────────── */
+.device-hero {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-6);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: var(--space-5);
+}
+
+.device-hero::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(0,194,255,0.05), transparent 70%);
+    pointer-events: none;
+}
+
+.device-hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+}
+
+.device-hero-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-lg);
+    background: var(--accent-cyan-dim);
+    color: var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.device-hero-name { font-size: var(--text-xl); font-weight: 800; }
+.device-hero-id   { font-size: var(--text-xs); color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px; }
+
+.device-status-ring {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 3px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+.ring-active   { border-color: var(--accent-green); color: var(--accent-green); background: var(--accent-green-dim); animation: pulse-ring 2s ease infinite; }
+.ring-paused   { border-color: var(--color-warning); color: var(--color-warning); background: var(--color-warning-dim); }
+.ring-revoked  { border-color: var(--color-danger);  color: var(--color-danger);  background: var(--color-danger-dim); }
+.ring-inactive { border-color: var(--border-soft);   color: var(--text-muted);    background: var(--bg-elevated); }
+
+/* ─── MINI LOCATION CARD ────────────────────────────────────── */
+.loc-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+.loc-field label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.loc-field .loc-val {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--accent-cyan);
+    font-weight: 600;
+}
+
+/* ─── CONSENT ACTIONS ───────────────────────────────────────── */
+.consent-action-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+}
+
+.consent-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-soft);
+    background: var(--bg-elevated);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-decoration: none;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+}
+
+.consent-action-btn i { font-size: 20px; }
+.consent-action-btn:hover { background: var(--bg-surface); border-color: var(--border-medium); }
+
+.consent-btn-pause   { color: var(--color-warning); }
+.consent-btn-pause:hover  { border-color: rgba(255,187,51,0.4); background: var(--color-warning-dim); }
+.consent-btn-resume  { color: var(--accent-green); }
+.consent-btn-resume:hover { border-color: rgba(0,255,136,0.4); background: var(--accent-green-dim); }
+.consent-btn-revoke  { color: var(--color-danger); }
+.consent-btn-revoke:hover { border-color: rgba(255,68,68,0.4); background: var(--color-danger-dim); }
+
+/* ─── DEVICE CARD (multi-device) ────────────────────────────── */
+.device-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.device-card-item {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-decoration: none;
+}
+
+.device-card-item:hover { border-color: var(--border-accent); transform: translateX(4px); }
+.device-card-item.selected { border-color: var(--accent-cyan); background: var(--accent-cyan-dim); }
+
+.device-card-item .d-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: var(--accent-cyan-dim);
+    color: var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.device-card-item .d-info { flex: 1; min-width: 0; }
+.device-card-item .d-name { font-weight: 700; font-size: var(--text-sm); truncate; }
+.device-card-item .d-sub  { font-size: var(--text-xs); color: var(--text-muted); }
+.device-card-item .d-status { flex-shrink: 0; }
+
+/* ─── MINI MAP (Owner) ──────────────────────────────────────── */
+.owner-map {
+    width: 100%;
+    height: 280px;
+    background: #090f16;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-soft);
+}
+
+/* ─── TIMELINE ──────────────────────────────────────────────── */
+.timeline {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-soft);
+}
+
+.timeline-item {
+    display: flex;
+    gap: var(--space-4);
+    padding: var(--space-3) 0;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+}
+
+.timeline-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    background: var(--bg-surface);
+    position: relative;
+    z-index: 1;
+}
+
+.td-green  { border-color: var(--accent-green);   color: var(--accent-green); }
+.td-cyan   { border-color: var(--accent-cyan);    color: var(--accent-cyan); }
+.td-warn   { border-color: var(--color-warning);  color: var(--color-warning); }
+.td-danger { border-color: var(--color-danger);   color: var(--color-danger); }
+
+.timeline-body { flex: 1; min-width: 0; }
+.timeline-title { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
+.timeline-time  { font-size: var(--text-xs); color: var(--text-muted); }
+.timeline-desc  { font-size: var(--text-xs); color: var(--text-secondary); margin-top: 2px; }
+
+/* ─── OWNER CHAT (full height) ──────────────────────────────── */
+.owner-chat-shell {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--topbar-height) - var(--bottom-nav-height) - var(--space-8));
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+/* ─── OWNER RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 640px) {
+    .owner-map { height: 220px; }
+    .consent-action-row { grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
+    .consent-action-btn { padding: var(--space-3); }
+    .consent-action-btn i { font-size: 18px; }
+}

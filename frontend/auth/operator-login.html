@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Operator Login</title>
+    <meta name="description" content="Operator authentication portal for AegisTrack CDEAS. Secure JWT-protected access.">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body class="auth-body">
+<div class="auth-shell">
+    <a href="login.html" class="auth-back"><i class="fa-solid fa-arrow-left"></i> Back to role selector</a>
+
+    <div class="auth-card">
+        <div class="auth-brand">
+            <div class="auth-logo" style="background:linear-gradient(135deg,var(--accent-green),#00b8a0);">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h1>Operator Portal</h1>
+            <p>Sign in to your AegisTrack operator account</p>
+        </div>
+
+        <form class="auth-form" id="operatorLoginForm" novalidate>
+            <div id="authError" class="auth-error hidden">
+                <i class="fa-solid fa-circle-xmark"></i>
+                <span id="authErrorText">Invalid credentials</span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <div class="form-input-icon-wrapper">
+                    <i class="fa-solid fa-user input-icon"></i>
+                    <input class="form-input" type="text" id="username" name="username"
+                        placeholder="Enter operator username" autocomplete="username" required autofocus>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <div class="password-wrapper">
+                    <input class="form-input" type="password" id="password" name="password"
+                        placeholder="Enter access code" autocomplete="current-password" required>
+                    <button type="button" class="show-password-btn" id="showPwd" aria-label="Show password">
+                        <i class="fa-solid fa-eye" id="showPwdIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:var(--text-xs);">
+                <label style="display:flex;align-items:center;gap:var(--space-2);cursor:pointer;color:var(--text-secondary);">
+                    <input type="checkbox" id="rememberMe" style="accent-color:var(--accent-green);"> Remember me
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full btn-lg auth-submit" id="loginBtn">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In to Operator Portal
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Not an operator? <a href="owner-login.html">Login as Device Owner</a>
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top:var(--space-5);">
+        <a href="../landing-page.html" style="font-size:var(--text-xs);color:var(--text-muted);display:inline-flex;align-items:center;gap:var(--space-1);">
+            <i class="fa-solid fa-satellite-dish"></i> AegisTrack CDEAS
+        </a>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script>
+(async () => {
+    // Redirect if already logged in as operator
+    if (AegisAuth.isLoggedIn() && AegisAuth.isOperator()) {
+        window.location.href = '../operator/dashboard.html';
+        return;
+    }
+
+    // Show/hide password toggle
+    const showPwdBtn  = document.getElementById('showPwd');
+    const showPwdIcon = document.getElementById('showPwdIcon');
+    const pwdInput    = document.getElementById('password');
+    showPwdBtn.addEventListener('click', () => {
+        const isText = pwdInput.type === 'text';
+        pwdInput.type = isText ? 'password' : 'text';
+        showPwdIcon.className = `fa-solid ${isText ? 'fa-eye' : 'fa-eye-slash'}`;
+    });
+
+    // Login form
+    const form     = document.getElementById('operatorLoginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const errBox   = document.getElementById('authError');
+    const errText  = document.getElementById('authErrorText');
+
+    function showError(msg) {
+        errText.textContent = msg;
+        errBox.classList.remove('hidden');
+    }
+    function clearError() { errBox.classList.add('hidden'); }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearError();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        if (!username || !password) { showError('Please enter username and password'); return; }
+
+        loginBtn.classList.add('btn-loading');
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating…';
+
+        const result = await AegisAuth.loginOperator(username, password);
+
+        loginBtn.classList.remove('btn-loading');
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In to Operator Portal';
+
+        if (result.success) {
+            showToast('Access granted. Welcome back!', 'success', 2000);
+            setTimeout(() => { window.location.href = '../operator/dashboard.html'; }, 600);
+        } else {
+            showError(result.error || 'Authentication failed');
+        }
+    });
+
+    // Enter key support
+    document.getElementById('username').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('password').focus(); });
+})();
+</script>
+</body>
+</html>

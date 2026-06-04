@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Devices</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/operator-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body>
+<div class="op-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+        <header class="topbar" id="topbar"></header>
+        <main class="main-content">
+            <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);">
+                <div>
+                    <h1>Device Management</h1>
+                    <p class="page-subtitle">All enrolled devices and their tracking status</p>
+                </div>
+                <div style="display:flex;gap:var(--space-3);">
+                    <button class="btn btn-secondary btn-sm" id="refreshDevices"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+                    <a href="live-monitor.html" class="btn btn-primary btn-sm"><i class="fa-solid fa-map-location-dot"></i> Live Monitor</a>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h3><i class="fa-solid fa-mobile-screen-button"></i> Enrolled Devices</h3>
+                    <span class="badge badge-cyan" id="deviceCount">—</span>
+                </div>
+                <div style="padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;">
+                    <div class="search-bar" style="flex:1;min-width:200px;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Search by device ID, owner, or model…" id="deviceSearch">
+                    </div>
+                    <select class="form-select" id="statusFilter" style="width:160px;">
+                        <option value="">All Statuses</option>
+                        <option value="TRACKING_ACTIVE">Active</option>
+                        <option value="PAUSED">Paused</option>
+                        <option value="REVOKED">Revoked</option>
+                    </select>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Device</th>
+                                <th>Owner</th>
+                                <th>Model / OS</th>
+                                <th>Status</th>
+                                <th>Last Location</th>
+                                <th>Last Seen</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="devicesTableBody">
+                            <tr><td colspan="7" style="text-align:center;padding:var(--space-10);color:var(--text-muted);">Loading devices…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/operator-portal.js"></script>
+<script>
+(async () => {
+    await initOperatorPortal('Devices');
+
+    let allDevices = [];
+
+    const statusColors = { TRACKING_ACTIVE:'badge-green', ACTIVE:'badge-green', PAUSED:'badge-warning', REVOKED:'badge-danger' };
+
+    async function loadDevices() {
+        const tbody = document.getElementById('devicesTableBody');
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:var(--space-8);color:var(--text-muted);">Loading…</td></tr>';
+        try {
+            let devs = [];
+            try {
+                // Try device-locations which joins device + registration + latest loc
+                const locData = await AegisAPI.locations.allLatest();
+                devs = locData.locations || [];
+                // Enrich with registration data
+                const regData = await AegisAPI.get('/device-registrations').catch(() => ({}));
+                const regs    = regData.registrations || regData.device_registrations || [];
+                devs = devs.map(d => {
+                    const reg = regs.find(r => r.device_id === d.device_id) || {};
+                    return { ...reg, ...d };
+                });
+            } catch {
+                const devData = await AegisAPI.devices.list();
+                devs = devData.devices || [];
+            }
+            allDevices = devs;
+            document.getElementById('deviceCount').textContent = `${devs.length} device${devs.length !== 1 ? 's' : ''}`;
+            renderTable();
+        } catch(e) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:var(--space-8);color:var(--text-muted);">Unable to load devices.</td></tr>`;
+        }
+    }
+
+    function renderTable() {
+        const q      = document.getElementById('deviceSearch').value.toLowerCase();
+        const filter = document.getElementById('statusFilter').value;
+        let filtered = allDevices.filter(d => {
+            const matchQ = !q || (d.device_id||'').toLowerCase().includes(q) || (d.owner_name||'').toLowerCase().includes(q) || (d.device_model||'').toLowerCase().includes(q);
+            const matchS = !filter || (d.tracking_status||d.status||'') === filter;
+            return matchQ && matchS;
+        });
+
+        const tbody = document.getElementById('devicesTableBody');
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:var(--space-8);color:var(--text-muted);">No devices match.</td></tr>'; return; }
+
+        tbody.innerHTML = filtered.map(d => {
+            const status = d.tracking_status || d.status || '—';
+            const hasLoc = d.latitude && d.longitude;
+            const locText = hasLoc ? `${parseFloat(d.latitude).toFixed(4)}, ${parseFloat(d.longitude).toFixed(4)}` : '—';
+            return `<tr>
+                <td>
+                    <div style="font-weight:600;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--accent-cyan);">${d.device_id || '—'}</div>
+                    <div style="font-size:var(--text-xs);color:var(--text-muted);">${d.device_name || ''}</div>
+                </td>
+                <td style="font-size:var(--text-sm);">${d.owner_name || '—'}</td>
+                <td style="font-size:var(--text-xs);color:var(--text-secondary);">${d.device_model || '—'}<br>${d.operating_system || ''}</td>
+                <td><span class="badge ${statusColors[status] || 'badge-muted'}">${status}</span></td>
+                <td>
+                    ${hasLoc
+                        ? `<a href="https://maps.google.com/?q=${d.latitude},${d.longitude}" target="_blank" style="color:var(--accent-cyan);font-size:var(--text-xs);display:flex;align-items:center;gap:4px;"><i class="fa-solid fa-location-dot"></i>${locText}</a>`
+                        : '<span style="color:var(--text-muted);font-size:var(--text-xs);">No location</span>'}
+                </td>
+                <td style="font-size:var(--text-xs);color:var(--text-muted);">${d.last_updated || d.timestamp ? timeAgo(d.last_updated || d.timestamp) : '—'}</td>
+                <td>
+                    <div style="display:flex;gap:var(--space-1);">
+                        <a href="live-monitor.html" class="btn btn-ghost btn-icon btn-icon-sm" title="View on map"><i class="fa-solid fa-map-location-dot"></i></a>
+                        <a href="communications.html" class="btn btn-ghost btn-icon btn-icon-sm" title="Message owner"><i class="fa-solid fa-comment"></i></a>
+                        <button class="btn btn-ghost btn-icon btn-icon-sm" title="Force location" onclick="forceLocation('${d.device_id}')"><i class="fa-solid fa-bolt"></i></button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    window.forceLocation = async (deviceId) => {
+        try {
+            await AegisAPI.devices.forceLocation(deviceId);
+            showToast('Force location request sent', 'success');
+        } catch(e) { showToast('Force location not supported', 'warning'); }
+    };
+
+    document.getElementById('deviceSearch').addEventListener('input', renderTable);
+    document.getElementById('statusFilter').addEventListener('change', renderTable);
+    document.getElementById('refreshDevices').addEventListener('click', loadDevices);
+
+    AegisWS.on('location_update', () => setTimeout(loadDevices, 500));
+    AegisWS.on('status_updated', () => setTimeout(loadDevices, 500));
+
+    loadDevices();
+    setInterval(loadDevices, 60000);
+})();
+</script>
+</body>
+</html>

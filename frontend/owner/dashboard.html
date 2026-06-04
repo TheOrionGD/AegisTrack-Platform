@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — My Dashboard</title>
+    <meta name="description" content="Device owner dashboard — view your tracking status, location, and consent controls.">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/owner-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body class="owner-shell">
+    <!-- Topbar -->
+    <header class="owner-topbar" id="ownerTopbar"></header>
+
+    <!-- Content -->
+    <main class="owner-content">
+        <!-- Welcome banner -->
+        <div style="margin-bottom:var(--space-5);">
+            <h1 style="font-size:var(--text-2xl);font-weight:800;">Welcome back, <span id="ownerGreetName">Owner</span> 👋</h1>
+            <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-top:4px;" id="ownerSubline">Loading your device status…</p>
+        </div>
+
+        <!-- Primary Device Card -->
+        <div class="device-hero" id="primaryDeviceCard">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);">
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                    <div class="device-hero-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                    <div>
+                        <div class="device-hero-name" id="primaryDeviceName">Loading…</div>
+                        <div class="device-hero-id" id="primaryDeviceId">—</div>
+                    </div>
+                </div>
+                <div class="device-status-ring ring-inactive" id="primaryStatusRing">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="loc-card" id="locCard">
+                <div class="loc-field">
+                    <label>Latitude</label>
+                    <div class="loc-val" id="dashLat">—</div>
+                </div>
+                <div class="loc-field">
+                    <label>Longitude</label>
+                    <div class="loc-val" id="dashLng">—</div>
+                </div>
+                <div class="loc-field">
+                    <label>Last Updated</label>
+                    <div class="loc-val" id="dashLastSeen" style="font-size:var(--text-xs);">—</div>
+                </div>
+                <div class="loc-field">
+                    <label>Accuracy</label>
+                    <div class="loc-val" id="dashAccuracy">—</div>
+                </div>
+            </div>
+
+            <!-- Consent Actions -->
+            <div class="consent-action-row" style="margin-top:var(--space-4);" id="consentActions">
+                <button class="consent-action-btn consent-btn-pause" id="pauseBtn" onclick="doConsent('pause')">
+                    <i class="fa-solid fa-pause"></i> Pause
+                </button>
+                <button class="consent-action-btn consent-btn-resume" id="resumeBtn" onclick="doConsent('resume')" style="display:none;">
+                    <i class="fa-solid fa-play"></i> Resume
+                </button>
+                <a href="live-tracking.html" class="consent-action-btn" style="color:var(--accent-cyan);">
+                    <i class="fa-solid fa-map-location-dot"></i> View Map
+                </a>
+                <button class="consent-action-btn consent-btn-revoke" onclick="doConsent('revoke')">
+                    <i class="fa-solid fa-ban"></i> Revoke
+                </button>
+            </div>
+        </div>
+
+        <!-- Multi-device list (if applicable) -->
+        <div id="moreDevicesSection" style="display:none;margin-bottom:var(--space-5);">
+            <div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-3);">All My Devices</div>
+            <div class="device-card-list" id="moreDevicesList"></div>
+        </div>
+
+        <!-- Quick links -->
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-3);margin-bottom:var(--space-5);">
+            <a href="chat.html" class="card card-sm" style="text-decoration:none;display:flex;align-items:center;gap:var(--space-3);">
+                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--accent-green-dim);color:var(--accent-green);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-comments"></i></div>
+                <div><div style="font-weight:600;font-size:var(--text-sm);">Chat</div><div style="font-size:var(--text-xs);color:var(--text-muted);">Message operator</div></div>
+            </a>
+            <a href="consent-management.html" class="card card-sm" style="text-decoration:none;display:flex;align-items:center;gap:var(--space-3);">
+                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--color-warning-dim);color:var(--color-warning);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-file-signature"></i></div>
+                <div><div style="font-weight:600;font-size:var(--text-sm);">Consent</div><div style="font-size:var(--text-xs);color:var(--text-muted);">Manage your consent</div></div>
+            </a>
+            <a href="ai-assistant.html" class="card card-sm" style="text-decoration:none;display:flex;align-items:center;gap:var(--space-3);">
+                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--accent-cyan-dim);color:var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-robot"></i></div>
+                <div><div style="font-weight:600;font-size:var(--text-sm);">AI Assistant</div><div style="font-size:var(--text-xs);color:var(--text-muted);">Ask anything</div></div>
+            </a>
+            <a href="settings.html" class="card card-sm" style="text-decoration:none;display:flex;align-items:center;gap:var(--space-3);">
+                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:rgba(255,255,255,0.04);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-gear"></i></div>
+                <div><div style="font-weight:600;font-size:var(--text-sm);">Settings</div><div style="font-size:var(--text-xs);color:var(--text-muted);">Account & preferences</div></div>
+            </a>
+        </div>
+
+        <!-- Consent Timeline -->
+        <div class="section-card" style="margin-bottom:var(--space-5);">
+            <div class="section-card-header"><h3><i class="fa-solid fa-timeline"></i> Consent History</h3></div>
+            <div class="section-card-body" style="padding:var(--space-4) var(--space-5);">
+                <div class="timeline" id="consentTimeline">
+                    <div class="empty-state" style="padding:var(--space-6);"><i class="fa-solid fa-clock-rotate-left"></i><p>Loading consent history…</p></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav" id="bottomNav"></nav>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/owner-portal.js"></script>
+<script>
+(async () => {
+    await initOwnerPortal('My Dashboard');
+
+    const identity = AegisAuth.getIdentity() || 'Owner';
+    document.getElementById('ownerGreetName').textContent = identity;
+
+    let primaryDevice = null;
+
+    // Status icons and ring classes
+    const statusMap = {
+        TRACKING_ACTIVE:  { ring: 'ring-active',   icon: 'fa-location-dot', color: 'var(--accent-green)', label: 'Tracking Active' },
+        PAUSED:           { ring: 'ring-paused',    icon: 'fa-pause',        color: 'var(--color-warning)', label: 'Paused' },
+        REVOKED:          { ring: 'ring-revoked',   icon: 'fa-ban',          color: 'var(--color-danger)',  label: 'Revoked' },
+        CONSENT_GRANTED:  { ring: 'ring-active',    icon: 'fa-check',        color: 'var(--accent-green)',  label: 'Consent Granted' },
+        default:          { ring: 'ring-inactive',  icon: 'fa-question',     color: 'var(--text-muted)',    label: 'Unknown' },
+    };
+
+    function applyStatusUI(status) {
+        const s = statusMap[status] || statusMap.default;
+        const ring = document.getElementById('primaryStatusRing');
+        if (ring) {
+            ring.className = `device-status-ring ${s.ring}`;
+            ring.innerHTML = `<i class="fa-solid ${s.icon}"></i>`;
+        }
+        document.getElementById('ownerSubline').textContent = `Status: ${s.label}`;
+
+        const pauseBtn  = document.getElementById('pauseBtn');
+        const resumeBtn = document.getElementById('resumeBtn');
+        if (pauseBtn && resumeBtn) {
+            if (status === 'PAUSED') {
+                pauseBtn.style.display  = 'none';
+                resumeBtn.style.display = '';
+            } else {
+                pauseBtn.style.display  = '';
+                resumeBtn.style.display = 'none';
+            }
+        }
+    }
+
+    async function loadDashboard() {
+        try {
+            // Try /my-devices first (multi-device), then /my-device
+            let devices = [];
+            try {
+                const d = await AegisAPI.owner.myDevices();
+                devices = d.devices || d || [];
+            } catch {
+                try {
+                    const d = await AegisAPI.owner.myDevice();
+                    devices = [d.device || d];
+                } catch {}
+            }
+
+            if (!devices.length) {
+                document.getElementById('primaryDeviceName').textContent = 'No device registered';
+                document.getElementById('primaryDeviceId').textContent = 'Visit enrollment link to register your device';
+                applyStatusUI('default');
+                return;
+            }
+
+            primaryDevice = devices[0];
+            document.getElementById('primaryDeviceName').textContent = primaryDevice.device_name || 'My Device';
+            document.getElementById('primaryDeviceId').textContent   = primaryDevice.device_id || '—';
+            applyStatusUI(primaryDevice.tracking_status || primaryDevice.status);
+
+            // Location
+            if (primaryDevice.latitude && primaryDevice.longitude) {
+                document.getElementById('dashLat').textContent     = formatCoord(primaryDevice.latitude);
+                document.getElementById('dashLng').textContent     = formatCoord(primaryDevice.longitude);
+                document.getElementById('dashLastSeen').textContent = primaryDevice.timestamp ? timeAgo(primaryDevice.timestamp) : '—';
+                document.getElementById('dashAccuracy').textContent = primaryDevice.accuracy ? `±${Math.round(primaryDevice.accuracy)}m` : '—';
+            } else {
+                document.getElementById('dashLat').textContent = 'No signal';
+            }
+
+            // More devices
+            if (devices.length > 1) {
+                document.getElementById('moreDevicesSection').style.display = '';
+                const listEl = document.getElementById('moreDevicesList');
+                listEl.innerHTML = devices.slice(1).map(d => `
+                    <div class="device-card-item">
+                        <div class="d-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                        <div class="d-info">
+                            <div class="d-name">${d.device_name || d.device_id}</div>
+                            <div class="d-sub">${d.device_model || '—'}</div>
+                        </div>
+                        <div class="d-status"><span class="badge ${d.tracking_status === 'TRACKING_ACTIVE' ? 'badge-green' : 'badge-muted'}">${d.tracking_status || '—'}</span></div>
+                    </div>`
+                ).join('');
+            }
+
+        } catch(e) {
+            document.getElementById('primaryDeviceName').textContent = 'Unable to load device';
+            applyStatusUI('default');
+        }
+    }
+
+    // Consent history timeline
+    async function loadConsentHistory() {
+        const timeline = document.getElementById('consentTimeline');
+        try {
+            const data = await AegisAPI.get('/consent-history');
+            const events = data.history || data.events || [];
+            if (!events.length) {
+                timeline.innerHTML = '<div class="empty-state" style="padding:var(--space-6);"><i class="fa-solid fa-clock-rotate-left"></i><p>No consent events yet</p></div>';
+                return;
+            }
+            const dotMap = { CONSENT_GRANTED:'td-green', CONSENT_REVOKED:'td-danger', TRACKING_PAUSED:'td-warn', TRACKING_RESUMED:'td-cyan' };
+            const iconMap = { CONSENT_GRANTED:'fa-check', CONSENT_REVOKED:'fa-ban', TRACKING_PAUSED:'fa-pause', TRACKING_RESUMED:'fa-play' };
+            timeline.innerHTML = events.map(ev => `
+                <div class="timeline-item">
+                    <div class="timeline-dot ${dotMap[ev.action] || 'td-cyan'}"><i class="fa-solid ${iconMap[ev.action] || 'fa-circle'}" style="font-size:10px;"></i></div>
+                    <div class="timeline-body">
+                        <div class="timeline-title">${ev.action?.replace(/_/g,' ') || '—'}</div>
+                        <div class="timeline-time">${ev.timestamp ? timeAgo(ev.timestamp) : '—'}</div>
+                        ${ev.note ? `<div class="timeline-desc">${ev.note}</div>` : ''}
+                    </div>
+                </div>`).join('');
+        } catch {
+            // Seed with creation event
+            timeline.innerHTML = `<div class="timeline-item">
+                <div class="timeline-dot td-green"><i class="fa-solid fa-check" style="font-size:10px;"></i></div>
+                <div class="timeline-body">
+                    <div class="timeline-title">Account Created</div>
+                    <div class="timeline-time">Initial enrollment</div>
+                </div>
+            </div>`;
+        }
+    }
+
+    window.doConsent = async function(action) {
+        if (action === 'revoke' && !confirm('Permanently revoke tracking consent for this device? This cannot be undone without a new enrollment link.')) return;
+        try {
+            await AegisAPI.owner.consent(action, primaryDevice?.device_id);
+            showToast(`Consent ${action}d successfully`, 'success');
+            await loadDashboard();
+        } catch(e) { showToast(AegisAPI.formatError(e), 'danger'); }
+    };
+
+    // WS location updates
+    AegisWS.on('location_update', (p) => {
+        if (primaryDevice && p.device_id === primaryDevice.device_id) {
+            document.getElementById('dashLat').textContent = formatCoord(p.latitude);
+            document.getElementById('dashLng').textContent = formatCoord(p.longitude);
+            document.getElementById('dashLastSeen').textContent = 'Just now';
+        }
+    });
+
+    loadDashboard();
+    loadConsentHistory();
+    setInterval(loadDashboard, 60000);
+})();
+</script>
+</body>
+</html>

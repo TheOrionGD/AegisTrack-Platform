@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Live Tracking</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/owner-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" referrerpolicy="no-referrer">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" referrerpolicy="no-referrer"></script>
+    <style>
+        .owner-content { padding: 0; overflow: hidden; }
+        #ownerMap { height: calc(100vh - var(--topbar-height) - var(--bottom-nav-height)); }
+        .map-overlay-panel {
+            position: absolute;
+            bottom: calc(var(--bottom-nav-height) + var(--space-4));
+            left: var(--space-4);
+            right: var(--space-4);
+            z-index: 500;
+            background: rgba(15,23,32,0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-xl);
+            padding: var(--space-4);
+        }
+    </style>
+</head>
+<body class="owner-shell">
+    <header class="owner-topbar" id="ownerTopbar"></header>
+    <main class="owner-content" style="position:relative;">
+        <div id="ownerMap"></div>
+        <div class="map-overlay-panel" id="mapInfoPanel">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
+                <div style="display:flex;align-items:center;gap:var(--space-2);">
+                    <div class="pulse-dot" id="statusDot"></div>
+                    <span style="font-size:var(--text-sm);font-weight:700;" id="deviceStatusLabel">Loading…</span>
+                </div>
+                <span style="font-size:var(--text-xs);color:var(--text-muted);" id="lastUpdateTime">—</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                <div>
+                    <div style="font-size:var(--text-xs);color:var(--text-muted);margin-bottom:2px;">Latitude</div>
+                    <div style="font-family:var(--font-mono);font-size:var(--text-sm);color:var(--accent-cyan);" id="panelLat">—</div>
+                </div>
+                <div>
+                    <div style="font-size:var(--text-xs);color:var(--text-muted);margin-bottom:2px;">Longitude</div>
+                    <div style="font-family:var(--font-mono);font-size:var(--text-sm);color:var(--accent-cyan);" id="panelLng">—</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:var(--space-2);margin-top:var(--space-3);">
+                <button class="btn btn-primary btn-sm" style="flex:1;" id="refreshLocBtn"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+                <button class="btn btn-secondary btn-sm" style="flex:1;" id="centerMapBtn"><i class="fa-solid fa-crosshairs"></i> Center Map</button>
+                <a id="mapsLink" href="#" target="_blank" class="btn btn-secondary btn-sm" style="flex:1;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Google Maps</a>
+            </div>
+        </div>
+    </main>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/owner-portal.js"></script>
+<script>
+(async () => {
+    await initOwnerPortal('My Location');
+
+    let map, deviceMarker, accuracyCircle;
+    let deviceId = null;
+
+    // Init map
+    map = L.map('ownerMap', { attributionControl: false, zoomControl: true }).setView([20.5937, 78.9629], 4);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+    const deviceIcon = L.divIcon({
+        html: `<div style="width:20px;height:20px;background:var(--accent-green);border-radius:50%;border:3px solid #090f16;box-shadow:0 0 16px #00ff88,0 0 32px rgba(0,255,136,0.3);"></div>
+               <div style="width:48px;height:48px;background:rgba(0,255,136,0.1);border-radius:50%;position:absolute;top:-14px;left:-14px;animation:pulse-ring 2s ease infinite;"></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+        className: ''
+    });
+
+    async function loadLocation() {
+        try {
+            const data = await AegisAPI.owner.myDevice();
+            const device = data.device || data;
+            deviceId = device.device_id;
+
+            const status = device.tracking_status || device.status || 'UNKNOWN';
+            document.getElementById('deviceStatusLabel').textContent = status.replace(/_/g, ' ');
+
+            const dot = document.getElementById('statusDot');
+            if (status === 'TRACKING_ACTIVE') { dot.className = 'pulse-dot'; }
+            else if (status === 'PAUSED') { dot.className = 'pulse-dot pulse-dot-warn'; }
+            else { dot.className = 'pulse-dot'; dot.style.background = 'var(--text-muted)'; }
+
+            if (device.latitude && device.longitude) {
+                const lat = parseFloat(device.latitude);
+                const lng = parseFloat(device.longitude);
+                const acc = parseFloat(device.accuracy || 0);
+
+                document.getElementById('panelLat').textContent   = formatCoord(lat);
+                document.getElementById('panelLng').textContent   = formatCoord(lng);
+                document.getElementById('lastUpdateTime').textContent = device.timestamp ? timeAgo(device.timestamp) : 'recently';
+                document.getElementById('mapsLink').href = `https://maps.google.com/?q=${lat},${lng}`;
+
+                if (deviceMarker) map.removeLayer(deviceMarker);
+                if (accuracyCircle) map.removeLayer(accuracyCircle);
+
+                deviceMarker = L.marker([lat, lng], { icon: deviceIcon }).addTo(map)
+                    .bindPopup(`<strong>My Device</strong><br>${formatCoord(lat)}, ${formatCoord(lng)}`);
+
+                if (acc > 0) {
+                    accuracyCircle = L.circle([lat, lng], {
+                        radius: acc, color: '#00ff88', fillColor: '#00ff88', weight: 1, fillOpacity: 0.05
+                    }).addTo(map);
+                }
+
+                map.setView([lat, lng], 15);
+            } else {
+                document.getElementById('panelLat').textContent = 'No signal';
+                document.getElementById('panelLng').textContent = '—';
+                showToast('No location data available. Ensure tracking is active.', 'warning');
+            }
+        } catch(e) {
+            document.getElementById('deviceStatusLabel').textContent = 'No device found';
+        }
+    }
+
+    document.getElementById('refreshLocBtn').addEventListener('click', () => { loadLocation(); showToast('Refreshing location…', 'info', 2000); });
+    document.getElementById('centerMapBtn').addEventListener('click', () => {
+        if (deviceMarker) map.setView(deviceMarker.getLatLng(), 16);
+    });
+
+    // WS live updates
+    AegisWS.on('location_update', (p) => {
+        if (!deviceId || p.device_id === deviceId) {
+            document.getElementById('panelLat').textContent = formatCoord(p.latitude);
+            document.getElementById('panelLng').textContent = formatCoord(p.longitude);
+            document.getElementById('lastUpdateTime').textContent = 'Just now';
+            if (deviceMarker && p.latitude && p.longitude) {
+                deviceMarker.setLatLng([p.latitude, p.longitude]);
+            }
+        }
+    });
+
+    loadLocation();
+    setInterval(loadLocation, 60000);
+})();
+</script>
+</body>
+</html>

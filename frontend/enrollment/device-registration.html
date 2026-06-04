@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Device Registration</title>
+    <meta name="description" content="Register your device with AegisTrack and grant consent to location tracking.">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+    <style>
+        .enroll-body {
+            background: var(--bg-base);
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: var(--space-6) var(--space-4);
+            position: relative;
+        }
+        .enroll-body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0,194,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,194,255,0.025) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+        .enroll-shell { width: 100%; max-width: 540px; position: relative; z-index: 1; animation: fadeInScale 0.4s ease; }
+        .consent-section { background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: var(--radius-xl); padding: var(--space-5); margin-bottom: var(--space-4); }
+        .consent-checkbox { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); background: var(--bg-elevated); border: 1px solid var(--border-soft); border-radius: var(--radius-lg); cursor: pointer; transition: border-color var(--transition-base); }
+        .consent-checkbox:hover { border-color: var(--accent-cyan); }
+        .consent-checkbox input[type="checkbox"] { accent-color: var(--accent-green); width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+        .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-soft); }
+        .step-dot.done  { background: var(--accent-green); }
+        .step-dot.active { background: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan); }
+    </style>
+</head>
+<body class="enroll-body">
+<div class="enroll-shell">
+    <!-- Brand header -->
+    <div style="text-align:center;margin-bottom:var(--space-6);">
+        <div class="auth-logo" style="margin:0 auto var(--space-3);"><i class="fa-solid fa-satellite-dish"></i></div>
+        <h1 style="font-size:var(--text-xl);font-weight:800;">AegisTrack Device Enrollment</h1>
+        <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-top:4px;">Secure, consent-based device registration</p>
+    </div>
+
+    <!-- Progress dots -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:var(--space-2);margin-bottom:var(--space-6);" id="stepDots">
+        <div class="step-dot active" id="dot1"></div>
+        <div style="height:1px;width:30px;background:var(--border-soft);"></div>
+        <div class="step-dot" id="dot2"></div>
+        <div style="height:1px;width:30px;background:var(--border-soft);"></div>
+        <div class="step-dot" id="dot3"></div>
+    </div>
+
+    <!-- Loading / Invalid Token -->
+    <div id="loadingState" style="text-align:center;padding:var(--space-8);">
+        <i class="fa-solid fa-circle-notch fa-spin" style="font-size:36px;color:var(--accent-cyan);"></i>
+        <p style="margin-top:var(--space-4);color:var(--text-secondary);">Verifying your enrollment link…</p>
+    </div>
+    <div id="invalidState" class="hidden" style="text-align:center;padding:var(--space-8);">
+        <i class="fa-solid fa-circle-xmark" style="font-size:48px;color:var(--color-danger);"></i>
+        <h2 style="margin-top:var(--space-4);">Invalid or Expired Link</h2>
+        <p style="color:var(--text-secondary);font-size:var(--text-sm);margin-top:var(--space-2);">This enrollment link is invalid or has expired. Please contact your operator for a new link.</p>
+        <a href="../enrollment/registration-expired.html" class="btn btn-secondary" style="margin-top:var(--space-5);">Learn More</a>
+    </div>
+
+    <!-- STEP 1: Consent Review -->
+    <div id="step1Content" class="hidden">
+        <div class="consent-section">
+            <div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-4);">Tracking Request Details</div>
+            <div id="requestDetails" style="display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--text-sm);"></div>
+        </div>
+
+        <div class="consent-section">
+            <div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-4);">Data Collected</div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+                <div style="display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);"><i class="fa-solid fa-location-dot" style="color:var(--accent-green);width:16px;"></i>GPS coordinates (latitude/longitude)</div>
+                <div style="display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);"><i class="fa-solid fa-mobile-screen-button" style="color:var(--accent-green);width:16px;"></i>Device model and operating system</div>
+                <div style="display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);"><i class="fa-solid fa-clock" style="color:var(--accent-green);width:16px;"></i>Location timestamp</div>
+                <div style="display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);"><i class="fa-solid fa-ban" style="color:var(--color-danger);width:16px;"></i>No calls, messages, or browsing history</div>
+            </div>
+        </div>
+
+        <div class="consent-checkbox" id="consentCheck">
+            <input type="checkbox" id="consentAgreed">
+            <label for="consentAgreed" style="font-size:var(--text-sm);color:var(--text-secondary);cursor:pointer;line-height:1.6;">
+                I have read and understood the tracking request details above and <strong style="color:var(--text-primary);">I voluntarily grant consent</strong> to share my device's location data for the stated purpose. I understand I can pause or revoke this consent at any time.
+            </label>
+        </div>
+
+        <button class="btn btn-primary btn-full btn-lg" id="proceedBtn" style="margin-top:var(--space-4);" disabled>
+            <i class="fa-solid fa-arrow-right"></i> Proceed to Registration
+        </button>
+    </div>
+
+    <!-- STEP 2: Account & Device -->
+    <div id="step2Content" class="hidden">
+        <div class="consent-section" style="margin-bottom:0;">
+            <div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-4);">Create Your Account</div>
+            <form id="registrationForm" style="display:flex;flex-direction:column;gap:var(--space-4);">
+                <div id="regError" class="auth-error hidden"><i class="fa-solid fa-circle-xmark"></i><span id="regErrorText">Error</span></div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input class="form-input" id="regName" type="text" placeholder="Your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input class="form-input" id="regEmail" type="email" placeholder="name@email.com" required>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                    <div class="form-group">
+                        <label class="form-label">Username *</label>
+                        <input class="form-input" id="regUsername" type="text" placeholder="Choose username" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password *</label>
+                        <div class="password-wrapper">
+                            <input class="form-input" id="regPassword" type="password" placeholder="Min. 8 characters" required>
+                            <button type="button" class="show-password-btn" id="regShowPwd"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:var(--space-2);">Device Information</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                    <div class="form-group">
+                        <label class="form-label">Device Name *</label>
+                        <input class="form-input" id="regDeviceName" type="text" placeholder="e.g. My iPhone 15" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Device Model *</label>
+                        <input class="form-input" id="regDeviceModel" type="text" placeholder="e.g. iPhone 15 Pro" required>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                    <div class="form-group">
+                        <label class="form-label">Operating System</label>
+                        <input class="form-input" id="regOS" type="text" placeholder="e.g. iOS 17.4">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">IMEI (optional)</label>
+                        <input class="form-input" id="regIMEI" type="text" placeholder="15-digit IMEI">
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:var(--space-3);">
+                    <button type="button" class="btn btn-secondary" id="backToStep1Btn"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                    <button type="submit" class="btn btn-primary" id="registerBtn" style="flex:1;">
+                        <i class="fa-solid fa-user-plus"></i> Create Account & Register
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- STEP 3: Location Permission -->
+    <div id="step3Content" class="hidden">
+        <div class="consent-section" style="text-align:center;">
+            <i class="fa-solid fa-location-dot" style="font-size:48px;color:var(--accent-green);margin-bottom:var(--space-4);display:block;"></i>
+            <h2 style="margin-bottom:var(--space-3);">Enable Location</h2>
+            <p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7;margin-bottom:var(--space-5);">
+                To begin tracking, please allow this page to access your device's location. Your browser will show a permission prompt.
+            </p>
+            <button class="btn btn-primary btn-full btn-lg" id="grantLocationBtn">
+                <i class="fa-solid fa-crosshairs"></i> Allow Location Access
+            </button>
+            <button class="btn btn-secondary btn-full" id="skipLocationBtn" style="margin-top:var(--space-3);">
+                Skip for Now
+            </button>
+            <p style="font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--space-4);">
+                Your first GPS fix will be sent to AegisTrack servers. You can update your location from the Owner Portal later.
+            </p>
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top:var(--space-6);">
+        <span style="font-size:var(--text-xs);color:var(--text-muted);display:inline-flex;align-items:center;gap:var(--space-1);">
+            <i class="fa-solid fa-shield-halved"></i> Secured by AegisTrack · Consent ID: <span id="tokenDisplay" style="font-family:var(--font-mono);">—</span>
+        </span>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+<script src="../js/config.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script>
+(async () => {
+    const params = new URLSearchParams(window.location.search);
+    const token  = params.get('token');
+
+    if (!token) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('invalidState').classList.remove('hidden');
+        return;
+    }
+    document.getElementById('tokenDisplay').textContent = token.substring(0, 12) + '…';
+
+    // Auto-detect OS & device info
+    const ua = navigator.userAgent;
+    const deviceOS = /iPhone|iPad/.test(ua) ? 'iOS' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : 'Unknown OS';
+    const deviceModel = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android Device' : 'Unknown Device';
+
+    function updateDots(active) {
+        ['dot1','dot2','dot3'].forEach((id, i) => {
+            const el = document.getElementById(id);
+            el.className = `step-dot ${i + 1 < active ? 'done' : i + 1 === active ? 'active' : ''}`;
+        });
+    }
+
+    function showStep(n) {
+        ['step1Content','step2Content','step3Content'].forEach((id, i) => {
+            document.getElementById(id).classList.toggle('hidden', i + 1 !== n);
+        });
+        updateDots(n);
+    }
+
+    // Verify token
+    try {
+        const data = await AegisAPI.tracking.verify(token);
+        const req  = data.tracking_request || data;
+
+        // Render details
+        const details = document.getElementById('requestDetails');
+        const fields = [
+            { label: 'Owner Name', value: req.owner_name || '—' },
+            { label: 'Organisation', value: req.organization_name || '—' },
+            { label: 'Purpose', value: req.tracking_purpose || '—' },
+            { label: 'Duration', value: req.tracking_duration || '—' },
+            { label: 'Expires', value: req.consent_expiry ? new Date(req.consent_expiry).toLocaleDateString() : '—' },
+        ];
+        details.innerHTML = fields.map(f => `
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-subtle);">
+                <span style="color:var(--text-secondary);">${f.label}</span>
+                <strong style="color:var(--text-primary);">${f.value}</strong>
+            </div>`).join('');
+
+        document.getElementById('loadingState').classList.add('hidden');
+        showStep(1);
+
+        // Consent checkbox
+        const checkbox = document.getElementById('consentAgreed');
+        const proceedBtn = document.getElementById('proceedBtn');
+        checkbox.addEventListener('change', () => { proceedBtn.disabled = !checkbox.checked; });
+
+        // Pre-fill fields
+        document.getElementById('regDeviceModel').value = deviceModel;
+        document.getElementById('regOS').value          = deviceOS;
+        if (req.owner_name) {
+            document.getElementById('regName').value = req.owner_name;
+        }
+
+        proceedBtn.addEventListener('click', () => {
+            if (!checkbox.checked) return;
+            showStep(2);
+        });
+
+        document.getElementById('backToStep1Btn').addEventListener('click', () => showStep(1));
+
+        // Show/hide password
+        const showPwdBtn = document.getElementById('regShowPwd');
+        const pwdInput   = document.getElementById('regPassword');
+        showPwdBtn.addEventListener('click', () => {
+            const isText = pwdInput.type === 'text';
+            pwdInput.type = isText ? 'password' : 'text';
+            showPwdBtn.innerHTML = `<i class="fa-solid ${isText ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
+        });
+
+        // Registration form
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errBox  = document.getElementById('regError');
+            const errText = document.getElementById('regErrorText');
+            const regBtn  = document.getElementById('registerBtn');
+            errBox.classList.add('hidden');
+
+            const pwd = document.getElementById('regPassword').value;
+            if (pwd.length < 8) { errText.textContent = 'Password must be at least 8 characters'; errBox.classList.remove('hidden'); return; }
+
+            const payload = {
+                owner_name:    document.getElementById('regName').value.trim(),
+                owner_email:   document.getElementById('regEmail').value.trim(),
+                owner_username: document.getElementById('regUsername').value.trim(),
+                owner_password: pwd,
+                device_name:   document.getElementById('regDeviceName').value.trim(),
+                device_model:  document.getElementById('regDeviceModel').value.trim(),
+                operating_system: document.getElementById('regOS').value.trim(),
+                imei:          document.getElementById('regIMEI').value.trim(),
+            };
+            if (!payload.owner_name || !payload.owner_email || !payload.owner_username || !payload.owner_password || !payload.device_name) {
+                errText.textContent = 'Please fill all required fields';
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            regBtn.disabled = true;
+            regBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Registering…';
+
+            try {
+                const result = await AegisAPI.tracking.register(token, payload);
+                // Store session if tokens returned
+                if (result.access_token) {
+                    AegisAuth.storeSession(result, 'DEVICE_OWNER');
+                    localStorage.setItem('access_token', result.access_token);
+                    localStorage.setItem('refresh_token', result.refresh_token);
+                }
+                showStep(3);
+            } catch(err) {
+                errText.textContent = AegisAPI.formatError(err);
+                errBox.classList.remove('hidden');
+                regBtn.disabled = false;
+                regBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account & Register';
+            }
+        });
+
+        // Step 3: Location
+        document.getElementById('grantLocationBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('grantLocationBtn');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Getting location…';
+            btn.disabled = true;
+            try {
+                const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true, timeout: 15000 }));
+                const { latitude, longitude, accuracy } = pos.coords;
+                // Send first location
+                await AegisAPI.post('/location/update', { latitude, longitude, accuracy });
+                showToast('Location recorded! Redirecting to Owner Portal…', 'success', 3000);
+                setTimeout(() => { window.location.href = '../enrollment/registration-success.html'; }, 2000);
+            } catch(err) {
+                btn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Retry Location';
+                btn.disabled = false;
+                if (err.code === 1) {
+                    showToast('Location permission denied. Click Skip to continue.', 'warning');
+                } else {
+                    showToast('Could not get location. Try again or skip.', 'warning');
+                }
+            }
+        });
+
+        document.getElementById('skipLocationBtn').addEventListener('click', () => {
+            window.location.href = '../enrollment/registration-success.html';
+        });
+
+    } catch(err) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('invalidState').classList.remove('hidden');
+    }
+})();
+</script>
+</body>
+</html>

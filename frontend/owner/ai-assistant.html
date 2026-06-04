@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — AI Assistant</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/owner-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+    <style>
+        .owner-content { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+    </style>
+</head>
+<body class="owner-shell">
+    <header class="owner-topbar" id="ownerTopbar"></header>
+    <main class="owner-content">
+        <div class="owner-chat-shell" style="border-radius:0;border-left:none;border-right:none;border-top:none;">
+            <!-- Header -->
+            <div class="chat-topbar" style="background:var(--bg-elevated);">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text-inverse);"><i class="fa-solid fa-robot"></i></div>
+                <div>
+                    <div style="font-weight:700;">MTS AI Assistant</div>
+                    <div style="font-size:var(--text-xs);color:var(--accent-green);">Your personal device assistant</div>
+                </div>
+                <button class="btn btn-ghost btn-sm btn-icon" id="clearAiBtn" title="Clear chat" style="margin-left:auto;"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+
+            <!-- Messages -->
+            <div class="chat-messages" id="ownerAiMessages">
+                <div class="message-bubble" style="max-width:90%;">
+                    <div class="msg-avatar" style="background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));color:var(--text-inverse);"><i class="fa-solid fa-robot" style="font-size:11px;"></i></div>
+                    <div class="msg-content">
+                        <div class="msg-text" style="background:var(--bg-elevated);border-color:var(--border-soft);">
+                            <strong style="color:var(--accent-cyan);">Hi! I'm your MTS AI assistant.</strong><br>
+                            I can help you with:<br>
+                            • Check your device location<br>
+                            • Understand your tracking status<br>
+                            • Pause or revoke tracking<br>
+                            • Contact your operator<br><br>
+                            What can I help you with today?
+                        </div>
+                        <span class="msg-time">AI Ready</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick prompts -->
+            <div style="padding:var(--space-2) var(--space-4);border-top:1px solid var(--border-subtle);overflow-x:auto;display:flex;gap:var(--space-2);flex-shrink:0;">
+                <button class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="ownerQuickAsk('Where is my device?')"><i class="fa-solid fa-location-dot"></i> My location</button>
+                <button class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="ownerQuickAsk('What is my tracking status?')"><i class="fa-solid fa-circle-info"></i> Status</button>
+                <button class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="ownerQuickAsk('How do I pause tracking?')"><i class="fa-solid fa-pause"></i> Pause tracking</button>
+                <button class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="ownerQuickAsk('How do I message my operator?')"><i class="fa-solid fa-comments"></i> Contact operator</button>
+                <button class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="ownerQuickAsk('How do I revoke my consent?')"><i class="fa-solid fa-ban"></i> Revoke consent</button>
+            </div>
+
+            <!-- Input -->
+            <div class="chat-input-bar">
+                <textarea id="ownerAiInput" placeholder="Ask about your device, location, or consent…" rows="1"></textarea>
+                <button class="btn btn-primary btn-icon" id="ownerAiSend"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </main>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/owner-portal.js"></script>
+<script>
+(async () => {
+    await initOwnerPortal('AI Assistant');
+
+    const msgs   = document.getElementById('ownerAiMessages');
+    const input  = document.getElementById('ownerAiInput');
+    const sendBtn = document.getElementById('ownerAiSend');
+    const identity = AegisAuth.getIdentity() || 'Owner';
+
+    let deviceData = [];
+    try {
+        const d = await AegisAPI.owner.myDevice();
+        deviceData = [d.device || d];
+    } catch {}
+
+    function addUserMsg(text) {
+        const b = document.createElement('div');
+        b.className = 'message-bubble sent';
+        b.innerHTML = `<div class="msg-content"><div class="msg-text" style="background:var(--accent-cyan-dim);border-color:rgba(0,194,255,0.2);color:var(--accent-cyan);">${text}</div><div style="display:flex;justify-content:flex-end;"><span class="msg-time">you</span></div></div><div class="msg-avatar" style="background:var(--accent-cyan-dim);color:var(--accent-cyan);font-size:11px;">${getAvatarInitials(identity)}</div>`;
+        msgs.appendChild(b);
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function addAiMsg(text) {
+        const b = document.createElement('div');
+        b.className = 'message-bubble';
+        b.style.maxWidth = '90%';
+        b.innerHTML = `<div class="msg-avatar" style="background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));color:var(--text-inverse);"><i class="fa-solid fa-robot" style="font-size:11px;"></i></div><div class="msg-content"><div class="msg-text" style="background:var(--bg-elevated);border-color:var(--border-soft);">${text}</div><span class="msg-time">${new Date().toLocaleTimeString()}</span></div>`;
+        msgs.appendChild(b);
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function showTyping() {
+        const b = document.createElement('div');
+        b.id = 'ownerAiTyping';
+        b.className = 'message-bubble';
+        b.innerHTML = `<div class="msg-avatar" style="background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));color:var(--text-inverse);"><i class="fa-solid fa-robot" style="font-size:11px;"></i></div><div class="msg-content"><div class="msg-text ai-typing" style="background:var(--bg-elevated);padding:10px 14px;"><span></span><span></span><span></span></div></div>`;
+        msgs.appendChild(b);
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+    function removeTyping() { const t = document.getElementById('ownerAiTyping'); if (t) t.remove(); }
+
+    async function sendQuery(q) {
+        const text = (q || input.value).trim();
+        if (!text) return;
+        input.value = '';
+        input.style.height = 'auto';
+        addUserMsg(text);
+        showTyping();
+        sendBtn.disabled = true;
+        await new Promise(r => setTimeout(r, 700 + Math.random() * 700));
+        const response = await OwnerAI.respond(text, deviceData);
+        removeTyping();
+        addAiMsg(response);
+        sendBtn.disabled = false;
+    }
+
+    window.ownerQuickAsk = (q) => sendQuery(q);
+    sendBtn.addEventListener('click', () => sendQuery());
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); } });
+    input.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
+
+    document.getElementById('clearAiBtn').addEventListener('click', () => {
+        msgs.innerHTML = '';
+        addAiMsg('Conversation cleared! How can I help you?');
+    });
+})();
+</script>
+</body>
+</html>

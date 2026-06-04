@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — My Devices</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/owner-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body class="owner-shell">
+    <header class="owner-topbar" id="ownerTopbar"></header>
+    <main class="owner-content">
+        <div class="page-header" style="margin-bottom:var(--space-5);">
+            <h1>My Devices</h1>
+            <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-top:4px;">All devices registered under your account</p>
+        </div>
+
+        <div id="devicesContainer">
+            <div class="empty-state"><i class="fa-solid fa-circle-notch fa-spin"></i><p>Loading your devices…</p></div>
+        </div>
+    </main>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-interceptor.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/ws.js"></script>
+<script src="../assets/js/owner-portal.js"></script>
+<script>
+(async () => {
+    await initOwnerPortal('My Devices');
+
+    const statusColors = { TRACKING_ACTIVE:'badge-green', PAUSED:'badge-warning', REVOKED:'badge-danger' };
+    const statusDots = { TRACKING_ACTIVE:'pulse-dot', PAUSED:'pulse-dot pulse-dot-warn', REVOKED:'pulse-dot pulse-dot-danger' };
+
+    async function loadDevices() {
+        const container = document.getElementById('devicesContainer');
+        let devices = [];
+        try {
+            try {
+                const data = await AegisAPI.owner.myDevices();
+                devices = data.devices || data || [];
+            } catch {
+                const data = await AegisAPI.owner.myDevice();
+                devices = [data.device || data];
+            }
+        } catch {}
+
+        if (!devices.length) {
+            container.innerHTML = `<div class="empty-state">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+                <p>No devices registered yet</p>
+                <p style="font-size:var(--text-xs);color:var(--text-muted);">You'll receive a registration link from your operator to enroll a device.</p>
+            </div>`;
+            return;
+        }
+
+        container.innerHTML = devices.map((d, i) => {
+            const status = d.tracking_status || d.status || 'UNKNOWN';
+            const dot = statusDots[status] || 'pulse-dot';
+            const badge = statusColors[status] || 'badge-muted';
+            const hasLoc = d.latitude && d.longitude;
+            return `<div class="device-hero" style="margin-bottom:var(--space-4);animation:fadeIn ${0.3 + i * 0.1}s ease;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);">
+                    <div style="display:flex;align-items:center;gap:var(--space-3);">
+                        <div class="device-hero-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                        <div>
+                            <div class="device-hero-name">${d.device_name || 'My Device'}</div>
+                            <div class="device-hero-id">${d.device_id || '—'}</div>
+                        </div>
+                    </div>
+                    <span class="badge ${badge}">${status.replace(/_/g,' ')}</span>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-4);font-size:var(--text-sm);">
+                    <div><span style="color:var(--text-muted);font-size:var(--text-xs);">Model</span><br><strong>${d.device_model || '—'}</strong></div>
+                    <div><span style="color:var(--text-muted);font-size:var(--text-xs);">OS</span><br><strong>${d.operating_system || '—'}</strong></div>
+                    <div><span style="color:var(--text-muted);font-size:var(--text-xs);">IMEI</span><br><strong style="font-family:var(--font-mono);font-size:var(--text-xs);">${d.imei || '—'}</strong></div>
+                    <div><span style="color:var(--text-muted);font-size:var(--text-xs);">Last Seen</span><br><strong>${d.timestamp ? timeAgo(d.timestamp) : '—'}</strong></div>
+                </div>
+
+                ${hasLoc ? `<div class="loc-card" style="margin-bottom:var(--space-4);">
+                    <div class="loc-field"><label>Latitude</label><div class="loc-val">${formatCoord(d.latitude)}</div></div>
+                    <div class="loc-field"><label>Longitude</label><div class="loc-val">${formatCoord(d.longitude)}</div></div>
+                </div>` : ''}
+
+                <div style="display:flex;gap:var(--space-2);">
+                    <a href="live-tracking.html" class="btn btn-secondary btn-sm" style="flex:1;"><i class="fa-solid fa-map-location-dot"></i> View Map</a>
+                    <a href="chat.html" class="btn btn-secondary btn-sm" style="flex:1;"><i class="fa-solid fa-comments"></i> Chat</a>
+                    <a href="consent-management.html" class="btn btn-secondary btn-sm" style="flex:1;"><i class="fa-solid fa-file-signature"></i> Consent</a>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    loadDevices();
+})();
+</script>
+</body>
+</html>

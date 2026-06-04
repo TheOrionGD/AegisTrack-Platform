@@ -1604,7 +1604,7 @@ def list_tracking_requests():
 
 @app.route('/register-device/<token>', methods=['GET'])
 def register_device_redirect(token):
-    return redirect(f"{get_frontend_url()}/pages/device-registration.html?token={token}")
+    return redirect(f"{get_frontend_url()}/enrollment/device-registration.html?token={token}")
 
 
 @app.route('/device-registrations', methods=['POST', 'OPTIONS'])

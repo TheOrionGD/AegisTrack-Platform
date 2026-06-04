@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack — Choose Your Portal</title>
+    <meta name="description" content="Select your role to access the AegisTrack platform — Operator or Device Owner.">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer">
+</head>
+<body class="auth-body">
+<div class="auth-shell">
+    <!-- Brand -->
+    <div class="auth-brand">
+        <div class="auth-logo"><i class="fa-solid fa-satellite-dish"></i></div>
+        <h1>AegisTrack</h1>
+        <p>Select your role to continue</p>
+    </div>
+
+    <!-- Role Cards -->
+    <div class="role-selector">
+        <a href="operator-login.html" class="role-card role-card-op" id="opCard">
+            <div class="role-icon role-icon-op"><i class="fa-solid fa-user-shield"></i></div>
+            <h3>Operator</h3>
+            <p>Monitor devices, manage geofences, and communicate with device owners.</p>
+            <span class="role-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+        <a href="owner-login.html" class="role-card role-card-own" id="ownCard">
+            <div class="role-icon role-icon-own"><i class="fa-solid fa-mobile-screen-button"></i></div>
+            <h3>Device Owner</h3>
+            <p>View your device tracking status, manage consent, and chat with operators.</p>
+            <span class="role-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+    </div>
+
+    <div class="auth-footer" style="margin-top:var(--space-6);">
+        <a href="../landing-page.html" style="color:var(--text-muted);display:inline-flex;align-items:center;gap:var(--space-2);">
+            <i class="fa-solid fa-arrow-left"></i> Back to Home
+        </a>
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script>
+    // If already logged in, redirect to appropriate portal
+    (async () => {
+        if (AegisAuth.isLoggedIn()) {
+            const role = AegisAuth.getRole();
+            if (role === 'OPERATOR')     window.location.href = '../operator/dashboard.html';
+            if (role === 'DEVICE_OWNER') window.location.href = '../owner/dashboard.html';
+        }
+    })();
+</script>
+</body>
+</html>
