@@ -180,6 +180,7 @@ The AegisTrack platform leverages a modern, decoupled, and secure technology sta
 
 #### Frontend (Client-Side)
 * **Core Languages**: Vanilla HTML5, Semantic Markup, CSS3, and Modern JavaScript (ES6+).
+* **Language Selection Rationale (JavaScript / ES6+)**: Chosen for native browser compatibility without heavy transpilation or client-side bundles, ensuring instant loads on mobile devices. Its event loop and asynchronous support (async/await) make it perfect for managing real-time tracking updates, WebSockets connection states, and dynamic leaflet canvas updates.
 * **Mapping Engine**: [Leaflet.js](https://leafletjs.com/) for interactive, lightweight canvas-based map rendering, utilizing custom map markers and vector layers.
 * **Map Tile Provider**: CartoDB Dark Matter tile set for a premium, dark-mode visual interface.
 * **WebSocket Integration**: Native Browser WebSockets API (`AegisWS`) with custom reconnect handling and message queuing.
@@ -188,6 +189,7 @@ The AegisTrack platform leverages a modern, decoupled, and secure technology sta
 
 #### Backend (Server-Side)
 * **API Framework**: Python [Flask](https://flask.palletsprojects.com/) as the lightweight API Gateway and controller manager.
+* **Language Selection Rationale (Python)**: Selected for its rapid development, high readability, and rich ecosystem of security and cryptography modules. Python simplifies PyMongo connectivity, secure rate-limiting, and Fernet log encryption, keeping the backend codebase lightweight, secure, and easy to audit for security regulations.
 * **WSGI Server**: [Gunicorn](https://gunicorn.org/) for production-grade concurrency handling on Render.
 * **Real-time Engine**: [Flask-Sock](https://github.com/mgood/flask-sock) for lightweight, standard-compliant WebSocket server connections.
 * **Security & Tokens**: [Flask-JWT-Extended](https://flask-jwt-extended.readthedocs.io/) for cryptographically signed access and refresh token management.
@@ -200,6 +202,7 @@ The AegisTrack platform leverages a modern, decoupled, and secure technology sta
 
 #### Desktop Client (Operational Monitor)
 * **Framework**: JavaFX 17+ with OpenJFX for a cross-platform, hardware-accelerated desktop supervisor dashboard.
+* **Language Selection Rationale (Java)**: Java was selected for the tactical desktop dashboard to guarantee cross-platform compatibility across Windows, Linux, and macOS. JavaFX leverages hardware acceleration, which is critical for rendering concurrent real-time coordinate updates and multi-vehicle routing paths smoothly without CPU resource exhaustion.
 * **Build System**: Maven for automated dependency and lifecycle management.
 
 ---
