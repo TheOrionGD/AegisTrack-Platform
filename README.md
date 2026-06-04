@@ -151,6 +151,57 @@ graph TD
     OwnRoutes --> DB
 ```
 
+### Technology Stack
+
+The AegisTrack platform leverages a modern, decoupled, and secure technology stack designed for performance, scalability, and ease of deployment.
+
+```text
++---------------------------------------------------------------------------------+
+|                                 Front-End Client                                |
+|        [Vanilla HTML5]  +  [Vanilla CSS3 (design-system.css)]  +  [ES6+ JS]     |
+|              [Leaflet.js (Map Grid)]  +  [CartoDB Dark Tile layers]             |
++---------------------------------------------------------------------------------+
+                                         |
+                                         | (HTTPS / Secure WebSockets)
+                                         v
++---------------------------------------------------------------------------------+
+|                                  Backend Engine                                 |
+|            [Python Flask (API Gateway)]  +  [Flask-Sock (WebSockets)]           |
+|                [Flask-JWT-Extended]  +  [Flask-Limiter (Rate Limit)]            |
++---------------------------------------------------------------------------------+
+                                         |
+                                         | (PyMongo Connection Pool)
+                                         v
++---------------------------------------------------------------------------------+
+|                                Database & Storage                               |
+|                  [MongoDB Atlas]  +  [Fernet Symmetric Vault]                   |
++---------------------------------------------------------------------------------+
+```
+
+#### Frontend (Client-Side)
+* **Core Languages**: Vanilla HTML5, Semantic Markup, CSS3, and Modern JavaScript (ES6+).
+* **Mapping Engine**: [Leaflet.js](https://leafletjs.com/) for interactive, lightweight canvas-based map rendering, utilizing custom map markers and vector layers.
+* **Map Tile Provider**: CartoDB Dark Matter tile set for a premium, dark-mode visual interface.
+* **WebSocket Integration**: Native Browser WebSockets API (`AegisWS`) with custom reconnect handling and message queuing.
+* **Layout & Responsiveness**: Vanilla CSS Grid & Flexbox, built with a mobile-first design system utilizing HSL-based color tokens.
+* **Hosting**: Vercel for fast, static edge distribution.
+
+#### Backend (Server-Side)
+* **API Framework**: Python [Flask](https://flask.palletsprojects.com/) as the lightweight API Gateway and controller manager.
+* **WSGI Server**: [Gunicorn](https://gunicorn.org/) for production-grade concurrency handling on Render.
+* **Real-time Engine**: [Flask-Sock](https://github.com/mgood/flask-sock) for lightweight, standard-compliant WebSocket server connections.
+* **Security & Tokens**: [Flask-JWT-Extended](https://flask-jwt-extended.readthedocs.io/) for cryptographically signed access and refresh token management.
+* **Rate Limiting**: [Flask-Limiter](https://flask-limiter.readthedocs.io/) to prevent brute-force attacks and abuse on sensitive auth and ingestion endpoints.
+
+#### Database (Data Layer)
+* **Database Engine**: [MongoDB Atlas](https://www.mongodb.com/atlas/database) for scalable document storage and high-throughput write performance of geolocation coordinates.
+* **Python Driver**: `PyMongo` for native, thread-safe database connection pooling.
+* **Encryption Vault**: [Cryptography (Fernet)](https://cryptography.io/en/latest/fernet/) for AES-128 symmetric key encryption of audit logs and PII (Personally Identifiable Information).
+
+#### Desktop Client (Operational Monitor)
+* **Framework**: JavaFX 17+ with OpenJFX for a cross-platform, hardware-accelerated desktop supervisor dashboard.
+* **Build System**: Maven for automated dependency and lifecycle management.
+
 ---
 
 ## 7. User Roles
