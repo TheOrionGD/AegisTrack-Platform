@@ -17,6 +17,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
 from dotenv import load_dotenv
+from functools import wraps
 from flask import Flask, request, jsonify, make_response, redirect, send_file
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -26,6 +27,7 @@ from flask_jwt_extended import (
     decode_token,
     get_jwt_identity,
     jwt_required,
+    get_jwt,
 )
 from flask_sock import Sock
 from passlib.hash import pbkdf2_sha256
@@ -54,6 +56,48 @@ def exempt_options():
 
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*", "allow_headers": "*", "methods": "*"}}) 
 jwt = JWTManager(app)
+
+@jwt.additional_claims_loader
+def add_claims_to_access_token(identity):
+    # Determine the role of the user logging in
+    user = users.find_one({'username': identity})
+    if user:
+        role = user.get('role', 'OPERATOR')
+        claims = {'role': role}
+        if role == 'DEVICE_OWNER':
+            claims['ownerId'] = identity
+            claims['deviceId'] = user.get('device_id')
+        else:
+            claims['operatorId'] = identity
+        return claims
+    return {'role': 'OPERATOR', 'operatorId': identity}
+
+
+def operator_required():
+    def wrapper(fn):
+        @wraps(fn)
+        @jwt_required()
+        def decorator(*args, **kwargs):
+            claims = get_jwt()
+            if claims.get('role') != 'OPERATOR':
+                return jsonify({'error': 'Unauthorized. Operator role required.'}), 403
+            return fn(*args, **kwargs)
+        return decorator
+    return wrapper
+
+
+def owner_required():
+    def wrapper(fn):
+        @wraps(fn)
+        @jwt_required()
+        def decorator(*args, **kwargs):
+            claims = get_jwt()
+            if claims.get('role') != 'DEVICE_OWNER':
+                return jsonify({'error': 'Unauthorized. Device Owner role required.'}), 403
+            return fn(*args, **kwargs)
+        return decorator
+    return wrapper
+
 sock = Sock(app)
 
 # CYBERSECURITY: Vault Encryption Key Derivation
@@ -88,7 +132,7 @@ except Exception as e:
         print(f"LOCAL MONGODB UNREACHABLE ({local_err}). DATABASE IS OFFLINE.")
         mongo_client = MongoClient('mongodb://localhost:27017/', serverSelectionTimeoutMS=2000)
 
-db = mongo_client['gps_tracking']
+db = mongo_client['aegistrack']
 users = db['users']
 devices = db['devices']
 locations = db['locations']
@@ -445,6 +489,177 @@ def login_user():
     }), 200
 
 
+@app.route('/auth/owner-login', methods=['POST', 'OPTIONS'])
+@limiter.limit("10 per minute")
+def owner_login():
+    if request.method == 'OPTIONS':
+        return '', 200
+    data = request.get_json() or {}
+    email = data.get('email') or data.get('username')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({'error': 'Email and password are required'}), 400
+
+    user = users.find_one({'username': email, 'role': 'DEVICE_OWNER'})
+    if not user or not verify_password(password, user['password']):
+        # Log failed login attempt
+        vault_logs.insert_one({
+            'owner': 'SYSTEM',
+            'data': cipher.encrypt(json.dumps({'event': 'OWNER_AUTH_FAILURE', 'target': email, 'ip': request.remote_addr}).encode()),
+            'created_at': datetime.now(timezone.utc),
+            'encrypted': True
+        })
+        return jsonify({'error': 'Invalid email or password'}), 401
+
+    access_token = create_access_token(identity=email)
+    refresh_token = create_refresh_token(identity=email)
+
+    # Log Success
+    now = datetime.now(timezone.utc)
+    vault_logs.insert_one({
+        'owner': email,
+        'data': cipher.encrypt(json.dumps({'event': 'OWNER_ACCESS_GRANTED', 'ip': request.remote_addr}).encode()),
+        'created_at': now,
+        'encrypted': True
+    })
+    consent_audit_logs.insert_one({
+        'event': 'OWNER_ACCESS_GRANTED',
+        'performed_by': email,
+        'details': {'ip': request.remote_addr},
+        'timestamp': now
+    })
+
+    return jsonify({
+        'access_token': access_token,
+        'refresh_token': refresh_token,
+        'role': 'DEVICE_OWNER',
+        'device_id': user.get('device_id'),
+        'message': 'Device Owner Access Granted.'
+    }), 200
+
+
+@app.route('/my-device', methods=['GET'])
+@owner_required()
+def get_my_device():
+    claims = get_jwt()
+    device_id = claims.get('deviceId')
+    username = get_jwt_identity()
+
+    reg = device_registrations.find_one({'device_id': device_id, 'owner_username': username})
+    device = devices.find_one({'device_id': device_id})
+    if not reg or not device:
+        return jsonify({'error': 'Device registration not found'}), 404
+
+    geofence = geofences.find_one({'device_id': device_id})
+    gf_data = None
+    if geofence:
+        gf_data = {
+            'center_lat': geofence.get('center_lat'),
+            'center_lng': geofence.get('center_lng'),
+            'radius_meters': geofence.get('radius_meters'),
+            'is_inside': geofence.get('is_inside', True)
+        }
+
+    return jsonify({
+        'owner_name': reg.get('owner_name') or device.get('owner_name'),
+        'device_name': device.get('device_name'),
+        'device_model': device.get('device_model'),
+        'latitude': device.get('latitude'),
+        'longitude': device.get('longitude'),
+        'accuracy': device.get('accuracy'),
+        'tracking_status': device.get('tracking_status'),
+        'last_updated': to_json(device).get('last_updated'),
+        'geofence_inside': device.get('geofence_inside', True),
+        'consent_status': reg.get('consent_status', 'GRANTED'),
+        'device_id': device_id,
+        'geofence': gf_data
+    }), 200
+
+
+@app.route('/my-device/consent', methods=['POST', 'OPTIONS'])
+@owner_required()
+def manage_my_consent():
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    data = request.get_json() or {}
+    action = data.get('action')
+    if action not in ('pause', 'resume', 'revoke'):
+        return jsonify({'error': 'Invalid action. Must be pause, resume, or revoke.'}), 400
+        
+    claims = get_jwt()
+    device_id = claims.get('deviceId')
+    username = get_jwt_identity()
+    
+    registration = device_registrations.find_one({'device_id': device_id, 'owner_username': username})
+    if not registration:
+        return jsonify({'error': 'Device registration not found'}), 404
+        
+    now = datetime.now(timezone.utc)
+    
+    if action == 'pause':
+        device_registrations.update_one({'_id': registration['_id']}, {'$set': {'tracking_status': 'PAUSED', 'last_updated': now}})
+        devices.update_one({'device_id': device_id}, {'$set': {'tracking_status': 'PAUSED', 'last_updated': now}})
+        tracking_requests.update_one({'token': registration.get('request_token')}, {'$set': {'status': 'PAUSED'}})
+        
+        consent_audit_logs.insert_one({
+            'event': 'TRACKING_PAUSED',
+            'performed_by': username,
+            'details': {'device_id': device_id},
+            'timestamp': now
+        })
+        
+        ws_payload = {'device_id': device_id, 'tracking_status': 'PAUSED'}
+        broadcast('status_updated', ws_payload, owner=registration.get('operator_id'))
+        broadcast('status_updated', ws_payload, owner=username)
+        
+        return jsonify({'message': 'Tracking paused', 'tracking_status': 'PAUSED'}), 200
+        
+    elif action == 'resume':
+        device_registrations.update_one({'_id': registration['_id']}, {'$set': {'tracking_status': 'TRACKING_ACTIVE', 'last_updated': now}})
+        devices.update_one({'device_id': device_id}, {'$set': {'tracking_status': 'TRACKING_ACTIVE', 'last_updated': now}})
+        tracking_requests.update_one({'token': registration.get('request_token')}, {'$set': {'status': 'TRACKING_ACTIVE'}})
+        
+        consent_audit_logs.insert_one({
+            'event': 'TRACKING_RESUMED',
+            'performed_by': username,
+            'details': {'device_id': device_id},
+            'timestamp': now
+        })
+        
+        ws_payload = {'device_id': device_id, 'tracking_status': 'TRACKING_ACTIVE'}
+        broadcast('status_updated', ws_payload, owner=registration.get('operator_id'))
+        broadcast('status_updated', ws_payload, owner=username)
+        
+        return jsonify({'message': 'Tracking resumed', 'tracking_status': 'TRACKING_ACTIVE'}), 200
+        
+    elif action == 'revoke':
+        device_registrations.update_one({'_id': registration['_id']}, {'$set': {'tracking_status': 'REVOKED', 'consent_status': 'REVOKED', 'revoked_at': now}})
+        devices.update_one({'device_id': device_id}, {'$set': {'tracking_status': 'REVOKED', 'consent_status': 'REVOKED', 'last_updated': now}})
+        tracking_requests.update_one({'token': registration.get('request_token')}, {'$set': {'status': 'REVOKED'}})
+        
+        consent_audit_logs.insert_one({
+            'event': 'CONSENT_REVOKED',
+            'performed_by': username,
+            'details': {'device_id': device_id, 'request_token': registration.get('request_token')},
+            'timestamp': now
+        })
+        
+        vault_logs.insert_one({
+            'owner': registration.get('owner_name'),
+            'data': cipher.encrypt(json.dumps({'event': 'CONSENT_REVOKED', 'device_id': device_id}).encode()),
+            'created_at': now,
+            'encrypted': True
+        })
+        
+        ws_payload = {'device_id': device_id, 'tracking_status': 'REVOKED', 'consent_status': 'REVOKED'}
+        broadcast('status_updated', ws_payload, owner=registration.get('operator_id'))
+        broadcast('status_updated', ws_payload, owner=username)
+        
+        return jsonify({'message': 'Consent withdrawn', 'tracking_status': 'REVOKED', 'consent_status': 'REVOKED'}), 200
+
+
 @app.route('/auth/refresh', methods=['POST', 'OPTIONS'])
 @jwt_required(refresh=True)
 def refresh_session():
@@ -456,7 +671,7 @@ def refresh_session():
 
 
 @app.route('/devices/register', methods=['POST'])
-@jwt_required()
+@operator_required()
 def register_device():
     username = get_jwt_identity()
     data = request.get_json() or {}
@@ -489,7 +704,7 @@ def register_device():
 
 
 @app.route('/devices', methods=['GET'])
-@jwt_required()
+@operator_required()
 def list_devices():
     username = get_jwt_identity()
     device_cursor = devices.find({'owner': username}, {'_id': 0, 'device_id': 1, 'latitude': 1, 'longitude': 1, 'accuracy': 1, 'timestamp': 1, 'last_updated': 1, 'geofence_inside': 1})
@@ -497,7 +712,7 @@ def list_devices():
 
 
 @app.route('/dashboard/summary', methods=['GET'])
-@jwt_required()
+@operator_required()
 def get_dashboard_summary():
     username = get_jwt_identity()
     user_devices = [device['device_id'] for device in devices.find({'owner': username}, {'device_id': 1})]
@@ -523,7 +738,7 @@ def get_dashboard_summary():
 
 
 @app.route('/device-locations', methods=['GET'])
-@jwt_required()
+@operator_required()
 def get_all_device_locations():
     username = get_jwt_identity()
     cursor = device_registrations.find({'operator_id': username}, {'_id': 0, 'device_id': 1, 'owner_name': 1})
@@ -962,7 +1177,7 @@ def send_html_email_via_smtp(to_email, subject, html_content):
 
 
 @app.route('/tracking-requests/<token>/send-email', methods=['POST'])
-@jwt_required()
+@operator_required()
 def send_tracking_request_email(token):
     username = get_jwt_identity()
     request_doc = tracking_requests.find_one({'token': token})
@@ -1055,7 +1270,7 @@ def send_tracking_request_email(token):
 
 @app.route('/tracking-requests', methods=['POST'])
 
-@jwt_required()
+@operator_required()
 @limiter.limit('10 per hour')
 def create_tracking_request():
     username = get_jwt_identity()
@@ -1307,7 +1522,7 @@ def get_tracking_request(token):
 
 
 @app.route('/tracking-requests/<token>/status', methods=['POST'])
-@jwt_required()
+@operator_required()
 def update_tracking_request_status(token):
     username = get_jwt_identity()
     data = request.get_json() or {}
@@ -1367,7 +1582,7 @@ def get_tracking_request_qr(token):
 
 
 @app.route('/tracking-requests', methods=['GET'])
-@jwt_required()
+@operator_required()
 def list_tracking_requests():
     username = get_jwt_identity()
     cursor = tracking_requests.find({'operator_id': username}, {'_id': 0}).sort('created_at', -1)
@@ -1546,7 +1761,7 @@ def create_device_registration():
 
 
 @app.route('/device-registrations', methods=['GET'])
-@jwt_required()
+@operator_required()
 def list_device_registrations():
     username = get_jwt_identity()
     cursor = device_registrations.find({'operator_id': username}, {'_id': 0}).sort('registered_at', -1)
@@ -1570,7 +1785,7 @@ def list_device_registrations():
 
 
 @app.route('/audit/logs', methods=['GET'])
-@jwt_required()
+@operator_required()
 def get_audit_logs():
     cursor = consent_audit_logs.find({}, {'_id': 0}).sort('timestamp', -1).limit(200)
     logs = [to_json(doc) for doc in cursor]
@@ -1578,7 +1793,7 @@ def get_audit_logs():
 
 
 @app.route('/operators', methods=['GET'])
-@jwt_required()
+@operator_required()
 def list_operators():
     cursor = users.find({'role': 'OPERATOR'}, {'_id': 0, 'username': 1, 'owner_name': 1, 'created_at': 1})
     ops = [to_json(doc) for doc in cursor]
@@ -1675,6 +1890,8 @@ def receive_device_location():
 
     if registration.get('consent_status') == 'REVOKED':
         return jsonify({'error': 'Consent has been revoked — tracking inactive'}), 403
+    if registration.get('tracking_status') in ('PAUSED', 'DISABLED'):
+        return jsonify({'error': 'Tracking has been paused or disabled by owner — telemetry rejected'}), 403
 
     now = datetime.now(timezone.utc)
     acc = float(accuracy) if accuracy is not None else None
@@ -1778,9 +1995,14 @@ def receive_device_location():
         'timestamp': ts,
         'tracking_status': 'TRACKING_ACTIVE'
     }
+    owner_username = registration.get('owner_username')
     broadcast('location_updated', ws_payload, owner=operator_id)
+    if owner_username:
+        broadcast('location_updated', ws_payload, owner=owner_username)
     if alert_payload:
         broadcast('geofence_alert', alert_payload, owner=operator_id)
+        if owner_username:
+            broadcast('geofence_alert', alert_payload, owner=owner_username)
 
     return jsonify({
         'message': 'Location received and persisted',
@@ -1853,7 +2075,7 @@ def force_location_check(device_id):
 
 
 @app.route('/tracking-requests/<token>/force-location', methods=['POST', 'OPTIONS'])
-@jwt_required()
+@operator_required()
 def request_force_location(token):
     """
     Operator-triggered: signal the enrolled device to send a fresh GPS reading immediately.
@@ -1902,7 +2124,7 @@ def request_force_location(token):
 
 
 @app.route('/devices/monitored', methods=['GET'])
-@jwt_required()
+@operator_required()
 def list_monitored_devices():
     """
     Returns all consent-enrolled devices for the operator, enriched with:
@@ -1956,7 +2178,7 @@ def list_monitored_devices():
 
 
 @app.route('/devices/<device_id>/locations', methods=['GET'])
-@jwt_required()
+@operator_required()
 def get_device_location_history(device_id):
     """
     Returns last N location records for a device (for path rendering on map).
@@ -1981,7 +2203,7 @@ def get_device_location_history(device_id):
 
 
 @app.route('/location', methods=['POST'])
-@jwt_required()
+@operator_required()
 def receive_location():
     username = get_jwt_identity()
     data = request.get_json() or {}
@@ -2087,7 +2309,7 @@ def receive_location():
 
 
 @app.route('/location/<device_id>', methods=['GET', 'OPTIONS'])
-@jwt_required()
+@operator_required()
 @limiter.exempt
 def get_location(device_id):
     # Guard: reject sentinel/placeholder IDs
@@ -2101,7 +2323,7 @@ def get_location(device_id):
 
 
 @app.route('/geofence', methods=['POST'])
-@jwt_required()
+@operator_required()
 def set_geofence():
     username = get_jwt_identity()
     data = request.get_json() or {}
@@ -2132,7 +2354,7 @@ def set_geofence():
 
 
 @app.route('/geofence/<device_id>', methods=['GET'])
-@jwt_required()
+@operator_required()
 def get_geofence(device_id):
     username = get_jwt_identity()
     device = devices.find_one({'device_id': device_id})
@@ -2144,7 +2366,7 @@ def get_geofence(device_id):
 
 
 @app.route('/alerts', methods=['GET'])
-@jwt_required()
+@operator_required()
 def get_alerts():
     username = get_jwt_identity()
     user_devices = [device['device_id'] for device in devices.find({'owner': username}, {'device_id': 1})]
@@ -2153,7 +2375,7 @@ def get_alerts():
 
 
 @app.route('/vault/<module>', methods=['POST'])
-@jwt_required()
+@operator_required()
 def save_vault_data(module):
     username = get_jwt_identity()
     data = request.get_json() or {}
@@ -2187,7 +2409,7 @@ def save_vault_data(module):
 
 
 @app.route('/vault/<module>', methods=['GET'])
-@jwt_required()
+@operator_required()
 def get_vault_data(module):
     username = get_jwt_identity()
     
@@ -2222,7 +2444,7 @@ def get_vault_data(module):
 
 
 @app.route('/proxy/groq', methods=['POST'])
-@jwt_required()
+@operator_required()
 def proxy_groq():
     """
     Proxy request to Groq API to keep the API Key secure on the server.

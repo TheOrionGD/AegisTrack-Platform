@@ -13,9 +13,7 @@ info:
     name: AegisTrack Command Core
     url: https://github.com/OrionGD/GD-s-Mobile-Tracking-System
 servers:
-  - url: http://localhost:5000
-    description: Local Development Server
-  - url: https://aegistrack-core-api.herokuapp.com
+  - url: https://aegistrack-backend.onrender.com
     description: Production Environment
 
 components:

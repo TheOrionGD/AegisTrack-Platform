@@ -14,25 +14,23 @@
 <body class="theme-shell">
     <div class="page-shell">
         <header class="hero-bar">
-            <div>
+            <div class="brand-group">
                 <p class="eyebrow">AegisTrack</p>
-                <h1>Consent-Based Device Enrollment</h1>
-                <p class="hero-copy">Generate secure consent requests and manage authorization workflows with
-                    operator-grade visibility.</p>
+                <h1>Consent Enrollment</h1>
+                <p class="hero-copy">Generate secure tracking consent requests.</p>
             </div>
             <div class="hero-actions">
                 <span class="status-pill">MODULE: CDEAS</span>
                 <span class="status-pill status-green">SECURE</span>
-                <a id="liveMonitorLink" href="live-monitor.html" class="btn-small hidden" target="_blank"
-                    style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
-                    <i class="fa-solid fa-satellite-dish"></i> Live Monitor
-                </a>
                 <div class="operator-auth">
-                    <input id="operatorUsername" type="text" placeholder="Operator username" />
+                    <input id="operatorUsername" type="text" placeholder="Username" />
                     <input id="operatorPassword" type="password" placeholder="Access code" />
                     <button id="operatorLoginBtn" class="btn-small">Login</button>
                     <button id="operatorLogoutBtn" class="btn-small btn-ghost hidden">Logout</button>
-                    <span id="operatorStatus" class="auth-status">Not signed in</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-circle-user" style="font-size: 16px; color: var(--accent-secondary);"></i>
+                        <span id="operatorStatus" class="auth-status">Not signed in</span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -40,96 +38,150 @@
         <main class="layout-grid">
             <section class="panel form-panel">
                 <div class="panel-header">
-                    <h2>Tracking Request Management</h2><button type="button" class="close-btn" aria-label="Close"><i
-                            class="fa-solid fa-times"></i></button>
+                    <h2>Tracking Request Management</h2>
+                    <button type="button" class="close-btn" aria-label="Close">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
                 </div>
                 <div class="panel-body">
                     <form id="trackingRequestForm">
                         <div class="wizard-step" data-step="1" id="formStep">
                             <div class="field-grid">
-                                <label>Mobile Number<input id="phoneNumber" type="tel" placeholder="+91xxxxxxxxxx"
-                                        required></label>
-                                <label>Device Owner Name<input id="ownerName" type="text" placeholder="Owner name"
-                                        required></label>
-                                <label>Organization Name<input id="organizationName" type="text"
-                                        placeholder="Organization" required></label>
-                                <label>Tracking Purpose<input id="trackingPurpose" type="text"
-                                        placeholder="E.g. Safety monitoring" required></label>
-                                <label>Tracking Duration<input id="trackingDuration" type="text" placeholder="30 days"
-                                        required></label>
-                                <label>Consent Expiry Date<input id="consentExpiry" type="date" required></label>
-                                <label>Notification Email (Recipient)<input id="notifyEmail" type="email"
-                                        placeholder="godfrey.prof@gmail.com"></label>
+                                <div class="floating-field">
+                                    <input id="phoneNumber" type="tel" placeholder=" " required>
+                                    <label for="phoneNumber">Mobile Number</label>
+                                </div>
+                                <div class="floating-field">
+                                    <input id="ownerName" type="text" placeholder=" " required>
+                                    <label for="ownerName">Device Owner Name</label>
+                                </div>
+                                <div class="floating-field">
+                                    <input id="organizationName" type="text" placeholder=" " required>
+                                    <label for="organizationName">Organization Name</label>
+                                </div>
+                                <div class="floating-field">
+                                    <input id="trackingPurpose" type="text" placeholder=" " required>
+                                    <label for="trackingPurpose">Tracking Purpose</label>
+                                </div>
+                                <div class="floating-field">
+                                    <input id="trackingDuration" type="text" placeholder=" " required>
+                                    <label for="trackingDuration">Tracking Duration</label>
+                                </div>
+                                <div class="floating-field">
+                                    <input id="consentExpiry" type="date" required>
+                                    <label for="consentExpiry">Consent Expiry Date</label>
+                                </div>
+                                <div class="floating-field">
+                                    <input id="notifyEmail" type="email" placeholder=" ">
+                                    <label for="notifyEmail">Notification Email (Recipient)</label>
+                                </div>
                             </div>
                         </div>
                         <div class="tracking-flow">
                             <div class="flow-step active" id="stepIndicator1">
                                 <span class="step-number">1</span>
-                                <div>
-                                    <strong>Build request</strong>
-                                    <p>Enter owner details and intent.</p>
-                                </div>
+                                <strong>Create</strong>
                             </div>
+                            <div class="step-divider"></div>
                             <div class="flow-step" id="stepIndicator2">
                                 <span class="step-number">2</span>
-                                <div>
-                                    <strong>Generate link</strong>
-                                    <p>Create secure consent access.</p>
-                                </div>
+                                <strong>Link</strong>
                             </div>
+                            <div class="step-divider"></div>
                             <div class="flow-step" id="stepIndicator3">
                                 <span class="step-number">3</span>
-                                <div>
-                                    <strong>Deliver</strong>
-                                    <p>Send through WhatsApp, email, or QR.</p>
-                                </div>
+                                <strong>Deliver</strong>
                             </div>
                         </div>
-                        <div class="button-row wizard-footer">
-                            <button type="button" id="prevBtn" class="btn-secondary hidden"><i
-                                    class="fa-solid fa-angle-left"></i> Back</button>
-                            <button type="button" id="previewBtn" class="btn-secondary"><i
-                                    class="fa-solid fa-arrow-right"></i> Continue</button>
-                            <button type="button" id="sendBtn" class="btn-primary hidden"><i
-                                    class="fa-solid fa-paper-plane"></i> Send Registration Link</button>
-                            <button type="button" id="cancelBtn" class="btn-ghost">Cancel Request</button>
+                        <div class="sticky-footer" id="wizardFooter">
+                            <button type="button" id="prevBtn" class="btn-secondary hidden">
+                                <i class="fa-solid fa-angle-left"></i> Back
+                            </button>
+                            <button type="button" id="previewBtn" class="btn-secondary">
+                                <i class="fa-solid fa-arrow-right"></i> Continue
+                            </button>
+                            <button type="button" id="sendBtn" class="btn-primary hidden">
+                                <i class="fa-solid fa-paper-plane"></i> Send Link
+                            </button>
+                            <button type="button" id="cancelBtn" class="btn-ghost">
+                                Cancel
+                            </button>
                         </div>
                     </form>
                 </div>
             </section>
 
             <section class="panel info-panel">
-                <div class="panel-header">
-                    <h2>Request Breakdown</h2><button type="button" class="close-btn" aria-label="Close"><i
-                            class="fa-solid fa-times"></i></button>
+                <div class="panel-header accordion-toggle" onclick="toggleAccordion('infoPanelContent')">
+                    <h2>Request Breakdown</h2>
+                    <span class="toggle-icon" id="infoPanelIcon"><i class="fa-solid fa-chevron-down"></i></span>
                 </div>
-                <div class="panel-body">
-                    <div class="info-row"><span>Secure Token</span><code id="requestToken">--</code></div>
-                    <div class="info-row"><span>Registration URL</span><code id="registrationUrl">--</code></div>
-                    <div class="info-row"><span>Delivery Mode</span><strong id="smsStatus">pending</strong></div>
+                <div class="panel-body accordion-content collapsed" id="infoPanelContent">
+                    <div class="breakdown-grid">
+                        <div class="grid-item">
+                            <span class="meta-label">Status</span>
+                            <div id="smsStatus" class="status-ready">pending</div>
+                        </div>
+                        <div class="grid-item">
+                            <span class="meta-label">Token</span>
+                            <div class="code-copy-row">
+                                <code id="requestToken" class="compact-code">--</code>
+                                <button type="button" class="icon-btn" onclick="copyTokenText()" title="Copy Token">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid-item">
+                            <span class="meta-label">Registration Link</span>
+                            <div class="code-copy-row">
+                                <code id="registrationUrl" class="compact-code">--</code>
+                                <button type="button" id="copyLinkBtn" class="icon-btn" title="Copy URL">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid-item">
+                            <span class="meta-label">Delivery Mode</span>
+                            <div class="code-copy-row" style="color: var(--accent-secondary); font-weight: 600; font-size: 13px;">
+                                WhatsApp / Email
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <section class="panel action-panel hidden" id="deliveryActionsPanel">
-                <div class="panel-header">
-                    <h2>Delivery Options</h2><button type="button" class="close-btn" aria-label="Close"><i
-                            class="fa-solid fa-times"></i></button>
+                <div class="panel-header accordion-toggle" onclick="toggleAccordion('deliveryActionsContent')">
+                    <h2>Delivery Options</h2>
+                    <span class="toggle-icon" id="deliveryActionsIcon"><i class="fa-solid fa-chevron-down"></i></span>
                 </div>
-                <div class="panel-body">
-                    <div class="button-row">
-                        <button type="button" id="whatsappWebBtn" class="btn-secondary">Send via WhatsApp Web</button>
-                        <button type="button" id="previewHtmlEmailBtn" class="btn-primary"
-                            style="background-color: #0A66C2;"><i class="fa-solid fa-envelope"></i> Preview HTML
-                            Email</button>
+                <div class="panel-body accordion-content collapsed" id="deliveryActionsContent">
+                    <div class="action-tray">
+                        <button type="button" id="whatsappWebBtn" class="tray-btn btn-whatsapp">
+                            <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                        </button>
+                        <button type="button" id="gmailComposeBtn" class="tray-btn btn-gmail">
+                            <i class="fa-solid fa-envelope"></i> Gmail
+                        </button>
+                        <button type="button" class="tray-btn btn-secondary" onclick="copyRegistrationLink()">
+                            <i class="fa-solid fa-copy"></i> Copy Link
+                        </button>
+                        <button type="button" id="previewHtmlEmailBtn" class="tray-btn btn-primary" style="background-color: #0A66C2;">
+                            <i class="fa-solid fa-envelope-open-text"></i> HTML Email
+                        </button>
                     </div>
-                    <div class="info-row"><span>Message Preview</span></div>
-                    <pre id="deliveryPreviewText" class="log-box">--</pre>
-                    <div class="qr-section">
-                        <span id="qr-display-text">Scan this QR code to access the consent portal.</span>
-                        <div id="qr-container"
-                            style="margin-top: 10px; display: flex; justify-content: center; background: rgb(203, 57, 57); padding: 10px; border-radius: 12px; width: max-content; margin-inline: auto;">
+
+                    <button type="button" id="openPreviewSheetBtn" class="btn-secondary" onclick="openBottomSheet()" style="width: 100%; margin-top: 8px; height: 40px; border-radius: 10px;">
+                        <i class="fa-solid fa-eye"></i> View Message Preview
+                    </button>
+
+                    <div class="qr-card" style="margin-top: 12px;">
+                        <h4>Scan To Register</h4>
+                        <div class="qr-wrapper">
+                            <div id="qr-container"></div>
+                            <img id="qrCodeImage" alt="QR code for consent link" class="qr-preview hidden" src="" />
                         </div>
-                        <img id="qrCodeImage" alt="QR code for consent link" class="qr-preview hidden" src="" />
+                        <div class="qr-meta">Expires: 24 Hours</div>
                     </div>
                 </div>
             </section>
@@ -145,17 +197,42 @@
             </section>
 
             <section class="panel audit-panel">
-                <div class="panel-header">
+                <div class="panel-header accordion-toggle" onclick="toggleAccordion('auditPanelContent')">
                     <h2>Operator Audit</h2>
+                    <span class="toggle-icon" id="auditPanelIcon"><i class="fa-solid fa-chevron-down"></i></span>
                 </div>
-                <div class="panel-body">
-                    <div id="auditLog" class="log-box">Ready to generate a secure link. All transactions will be logged.
-                    </div>
+                <div class="panel-body accordion-content collapsed" id="auditPanelContent">
+                    <div id="auditLog" class="log-box">Ready to generate a secure link. All transactions will be logged.</div>
                 </div>
             </section>
         </main>
     </div>
 
+    <!-- Message Preview Bottom Sheet -->
+    <div id="bottomSheet" class="bottom-sheet hidden">
+        <div class="bottom-sheet-backdrop" onclick="closeBottomSheet()"></div>
+        <div class="bottom-sheet-content">
+            <div class="bottom-sheet-header">
+                <h3>Message Preview</h3>
+                <button type="button" class="icon-btn" onclick="closeBottomSheet()" style="background:none;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="bottom-sheet-body">
+                <pre id="deliveryPreviewText" class="sheet-pre">--</pre>
+            </div>
+            <div style="display: flex; gap: 8px; padding-top: 8px;">
+                <button type="button" class="btn-primary" onclick="copyBottomSheetText()" style="flex: 1;">
+                    <i class="fa-solid fa-copy"></i> Copy Message
+                </button>
+                <button type="button" class="btn-secondary" onclick="closeBottomSheet()" style="flex: 1;">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legacy SMS Preview Modal -->
     <div id="smsPreviewModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="modal-card">
             <div class="modal-header">
@@ -167,20 +244,19 @@
             </div>
             <div class="modal-actions">
                 <button class="btn-secondary" id="copySmsBtn"><i class="fa-solid fa-copy"></i> Copy Message</button>
-                <button class="btn-primary" id="sendPreviewBtn"><i class="fa-solid fa-paper-plane"></i> Confirm &
-                    Send</button>
+                <button class="btn-primary" id="sendPreviewBtn"><i class="fa-solid fa-paper-plane"></i> Confirm & Send</button>
             </div>
         </div>
     </div>
 
+    <!-- HTML Email Preview Modal -->
     <div id="htmlEmailPreviewModal" class="modal hidden" role="dialog" aria-modal="true"
         aria-labelledby="htmlModalTitle">
         <div class="modal-card modal-large" style="max-width: 800px; width: 95%;">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; flex-direction: column; text-align: left;">
                     <h3 id="htmlModalTitle" style="margin: 0; font-size: 1.25rem;">Consent HTML Email Preview</h3>
-                    <p style="margin: 3px 0 0 0; font-size: 11px; color: #a0aec0;">Enterprise-grade LinkedIn-style HTML
-                        notification</p>
+                    <p style="margin: 3px 0 0 0; font-size: 11px; color: #a0aec0;">Enterprise-grade notification</p>
                 </div>
                 <div class="preview-controls" style="display: flex; gap: 8px; margin-inline: auto 15px;">
                     <button type="button" id="btnPreviewDesktop" class="btn-small active"
@@ -220,11 +296,109 @@
         </div>
     </div>
 
+    <!-- Floating Live Monitor FAB -->
+    <a id="liveMonitorLink" href="live-monitor.html" class="hidden" target="_blank">
+        <i class="fa-solid fa-satellite-dish"></i> Live Monitor
+    </a>
+
     <div id="toastContainer" class="toast-container"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="../js/config.js"></script>
     <script src="../js/auth-interceptor.js"></script>
     <script src="../js/tracking-request.js"></script>
+
+    <!-- Custom Mobile Interactivity Helpers -->
+    <script>
+        function toggleAccordion(contentId) {
+            const content = document.getElementById(contentId);
+            const iconId = contentId.replace('Content', 'Icon');
+            const icon = document.getElementById(iconId);
+            if (content) {
+                const isCollapsed = content.classList.toggle('collapsed');
+                if (icon) {
+                    if (isCollapsed) {
+                        icon.classList.remove('rotated');
+                    } else {
+                        icon.classList.add('rotated');
+                    }
+                }
+            }
+        }
+
+        function openBottomSheet() {
+            document.getElementById('bottomSheet').classList.remove('hidden');
+        }
+
+        function closeBottomSheet() {
+            document.getElementById('bottomSheet').classList.add('hidden');
+        }
+
+        function copyBottomSheetText() {
+            const text = document.getElementById('deliveryPreviewText').textContent;
+            if (text === '--') return;
+            navigator.clipboard.writeText(text).then(() => {
+                if (typeof showToast === 'function') {
+                    showToast('Message copied to clipboard!', 'success');
+                } else {
+                    alert('Message copied to clipboard!');
+                }
+            }).catch(() => {
+                if (typeof showToast === 'function') {
+                    showToast('Failed to copy message.', 'danger');
+                } else {
+                    alert('Failed to copy message.');
+                }
+            });
+        }
+
+        function copyTokenText() {
+            const token = document.getElementById('requestToken').textContent;
+            if (token === '--') return;
+            navigator.clipboard.writeText(token).then(() => {
+                if (typeof showToast === 'function') {
+                    showToast('Token copied to clipboard!', 'success');
+                } else {
+                    alert('Token copied to clipboard!');
+                }
+            }).catch(() => {
+                if (typeof showToast === 'function') {
+                    showToast('Failed to copy token.', 'danger');
+                } else {
+                    alert('Failed to copy token.');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Observe class changes on deliveryActionsPanel to expand accordions automatically when link is generated
+            const deliveryActionsPanel = document.getElementById('deliveryActionsPanel');
+            if (deliveryActionsPanel) {
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.attributeName === 'class') {
+                            if (!deliveryActionsPanel.classList.contains('hidden')) {
+                                // Expand Delivery Options accordion
+                                const deliveryContent = document.getElementById('deliveryActionsContent');
+                                if (deliveryContent && deliveryContent.classList.contains('collapsed')) {
+                                    deliveryContent.classList.remove('collapsed');
+                                    const deliveryIcon = document.getElementById('deliveryActionsIcon');
+                                    if (deliveryIcon) deliveryIcon.classList.add('rotated');
+                                }
+                                // Expand Request Breakdown accordion
+                                const infoContent = document.getElementById('infoPanelContent');
+                                if (infoContent && infoContent.classList.contains('collapsed')) {
+                                    infoContent.classList.remove('collapsed');
+                                    const infoIcon = document.getElementById('infoPanelIcon');
+                                    if (infoIcon) infoIcon.classList.add('rotated');
+                                }
+                            }
+                        }
+                    });
+                });
+                observer.observe(deliveryActionsPanel, { attributes: true });
+            }
+        });
+    </script>
 </body>
 
 </html>

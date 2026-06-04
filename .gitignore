@@ -57,6 +57,7 @@ target/
 *.ear
 .mvn/
 build/
+dependency-reduced-pom.xml
 
 # --- Operating System ---
 .DS_Store

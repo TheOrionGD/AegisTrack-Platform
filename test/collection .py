@@ -13,7 +13,7 @@ def json_serial(obj):
 
 try:
     client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
-    db = client['gps_tracking']
+    db = client['aegistrack']
     collections = [
         'users', 'devices', 'locations', 'geofences', 'alerts',
         'vault_analytics', 'vault_threats', 'vault_logs', 

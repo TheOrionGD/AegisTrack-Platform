@@ -16,7 +16,7 @@
     // Helper to get backend URL dynamically
     function getBackendUrl() {
         if (window.BACKEND_URL) return window.BACKEND_URL;
-        return `${window.location.protocol === 'file:' ? 'http:' : window.location.protocol}//${window.location.hostname || 'localhost'}:5000`;
+        return "https://aegistrack-backend.onrender.com";
     }
 
     // Perform the refresh token request

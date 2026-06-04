@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisTrack Core — My Live Monitor</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/tracking-request.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" referrerpolicy="no-referrer" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" referrerpolicy="no-referrer"></script>
+    <style>
+        .monitor-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .map-card {
+            min-height: 300px;
+            height: 350px;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background: #081018;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-active {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--accent);
+        }
+
+        .badge-paused {
+            background: rgba(255, 187, 51, 0.12);
+            color: var(--warning);
+        }
+
+        .badge-revoked {
+            background: rgba(255, 68, 68, 0.12);
+            color: var(--danger);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 8px 0;
+            font-size: 13px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row span {
+            color: var(--muted);
+        }
+
+        .detail-row strong {
+            color: var(--text);
+        }
+
+        .ws-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .ws-connected {
+            color: var(--accent);
+            background: rgba(0, 255, 136, 0.08);
+        }
+
+        .ws-disconnected {
+            color: var(--warning);
+            background: rgba(255, 187, 51, 0.08);
+        }
+
+        .ws-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+    </style>
+</head>
+
+<body class="theme-shell">
+    <div class="page-shell">
+        <header class="hero-bar">
+            <div class="brand-group">
+                <p class="eyebrow">AegisTrack</p>
+                <h1>Location Monitor</h1>
+                <p class="hero-copy">Manage consent states and track location telemetry for your registered node.</p>
+            </div>
+            <div class="hero-actions">
+                <div id="wsStatusBadge" class="ws-badge ws-disconnected">
+                    <span class="ws-dot"></span>
+                    <span id="wsStatusText">DISCONNECTED</span>
+                </div>
+                <div class="operator-auth" style="margin-left: 10px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-circle-user" style="font-size: 16px; color: var(--accent-secondary);"></i>
+                        <span id="ownerLabel" class="auth-status signed">Device Owner</span>
+                        <button id="logoutBtn" class="btn-small btn-ghost" title="Logout" style="padding: 0 10px; height: 30px;">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="monitor-layout">
+            <div class="layout-grid">
+                <!-- Details Card -->
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2>Device & Consent Registry</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="detail-row">
+                            <span>Owner Name</span>
+                            <strong id="ownerName">—</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Device Details</span>
+                            <strong id="deviceModel">—</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Last Updated</span>
+                            <strong id="lastUpdated">—</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Geofence Status</span>
+                            <strong id="geofenceStatus">—</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Consent Status</span>
+                            <span id="consentBadge" class="status-badge badge-active">Granted</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Tracking Status</span>
+                            <span id="trackingBadge" class="status-badge badge-active">Active</span>
+                        </div>
+
+                        <!-- Location Metadata -->
+                        <div class="detail-row" style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 10px;">
+                            <span>Current Position</span>
+                            <strong id="currentCoords">—</strong>
+                        </div>
+
+                        <!-- Management Actions -->
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" id="pauseBtn" class="btn-secondary" style="flex: 1; height: 40px; font-size: 13px;">
+                                    <i class="fa-solid fa-pause"></i> Pause Tracking
+                                </button>
+                                <button type="button" id="resumeBtn" class="btn-primary" style="flex: 1; height: 40px; font-size: 13px;">
+                                    <i class="fa-solid fa-play"></i> Resume Tracking
+                                </button>
+                            </div>
+                            <button type="button" id="revokeBtn" class="btn-ghost" style="width: 100%; height: 40px; font-size: 13px; margin-top: 4px;">
+                                <i class="fa-solid fa-ban"></i> Withdraw Tracking Consent
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Map View -->
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2>Live Position Map</h2>
+                    </div>
+                    <div class="panel-body" style="padding: 12px;">
+                        <div class="map-card">
+                            <div id="map"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="../js/config.js"></script>
+    <script src="../js/owner-live-monitor.js"></script>
+</body>
+
+</html>
