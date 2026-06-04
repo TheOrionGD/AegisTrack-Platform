@@ -1,6 +1,4 @@
-const BACKEND_HOST = window.location.hostname || 'localhost';
-const BACKEND_PROTOCOL = window.location.protocol === 'file:' ? 'http:' : window.location.protocol;
-const BACKEND_URL = window.BACKEND_URL || `${BACKEND_PROTOCOL}//${BACKEND_HOST}:5000`;
+const BACKEND_URL = window.BACKEND_URL || 'https://aegistrack-backend.onrender.com';
 
 const requestForm = document.getElementById('trackingRequestForm');
 const previewBtn = document.getElementById('previewBtn');

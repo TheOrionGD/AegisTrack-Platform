@@ -21,7 +21,7 @@ def json_serial(obj):
 
 try:
     client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
-    db = client['gps_tracking']
+    db = client['aegistrack']
     
     # List of all collections to inspect
     collections = [

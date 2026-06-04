@@ -13,7 +13,7 @@
  */
 
 // Production API URL configuration (Replace with your actual backend service URL when deploying)
-window.BACKEND_URL = "https://aegistrack-backend-k1i6.onrender.com"; 
+window.BACKEND_URL = "https://aegistrack-backend.onrender.com"; 
 
 // Optional: Explicitly configure production WebSocket URL if automatic replacement fails
 // window.WS_URL = "wss://aegistrack-backend.onrender.com/ws";

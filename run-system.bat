@@ -1,5 +1,5 @@
 @echo off
-REM Run the GPS tracking system: backend, frontend, and optional Java dashboard.
+REM Run the AegisTrack system: backend, frontend, and optional Java dashboard.
 
 REM Change to repository root (same folder as this batch file).
 cd /d "%~dp0"
@@ -12,7 +12,7 @@ goto :dispatch
 
 :menu
 echo.
-echo ================= RUN SYSTEM MENU =================
+echo ================= AegisTrack RUN SYSTEM MENU =================
 echo 1) Start system (backend, frontend, dashboard)
 echo 2) Terminate system processes
 echo 0) Exit
@@ -60,7 +60,7 @@ if "%SYSTEM_IPV4%"=="" set "SYSTEM_IPV4=localhost"
 if "%PORT%"=="" set "PORT=8000"
 
 REM Start backend server in a new command window.
-start "GPS Backend" cmd /k "cd /d "%~dp0backend" && python app.py"
+start "AegisTrack Backend" cmd /k "cd /d "%~dp0backend" && python app.py"
 
 echo Waiting 10 seconds for backend initialization...
 timeout /t 10 /nobreak > nul
@@ -78,11 +78,11 @@ echo Waiting 10 seconds before launching Java Dashboard...
 timeout /t 10 /nobreak > nul
 
 REM Launch Java dashboard automatically.
-start "Java Dashboard" cmd /k "cd /d "%~dp0java-dashboard" && mvn clean compile && mvn javafx:run"
+start "AegisTrack Dashboard" cmd /k "cd /d "%~dp0java-dashboard" && mvn clean compile && mvn javafx:run"
 
 echo.
 echo =======================================================
-echo  SYSTEM STARTED SUCCESSFULLY
+echo  AegisTrack SYSTEM STARTED SUCCESSFULLY
 echo =======================================================
 echo  FRONTEND ACCESS: http://%SYSTEM_IPV4%:%PORT%/pages/tracking-request.html
 echo.
@@ -106,9 +106,9 @@ REM Kill Maven/Java dashboard processes (mvn or javafx)
 powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and ($_.CommandLine -match 'mvn' -or $_.CommandLine -match 'javafx') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }" > nul 2>&1
 
 REM Additionally, attempt to close windows by title if present
-taskkill /FI "WINDOWTITLE eq GPS Backend" /T /F > nul 2>&1
+taskkill /FI "WINDOWTITLE eq AegisTrack Backend" /T /F > nul 2>&1
 taskkill /FI "WINDOWTITLE eq Frontend Server" /T /F > nul 2>&1
-taskkill /FI "WINDOWTITLE eq Java Dashboard" /T /F > nul 2>&1
+taskkill /FI "WINDOWTITLE eq AegisTrack Dashboard" /T /F > nul 2>&1
 
 echo Termination commands issued.
 goto :eof

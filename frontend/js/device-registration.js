@@ -1,6 +1,4 @@
-const BACKEND_HOST = window.location.hostname || 'localhost';
-const BACKEND_PROTOCOL = window.location.protocol === 'file:' ? 'http:' : window.location.protocol;
-const BACKEND_URL = window.BACKEND_URL || `${BACKEND_PROTOCOL}//${BACKEND_HOST}:5000`;
+const BACKEND_URL = window.BACKEND_URL || 'https://aegistrack-backend.onrender.com';
 const queryParams = new URLSearchParams(window.location.search);
 let token = queryParams.get('token');
 let isStoredSession = false;
@@ -60,6 +58,7 @@ const fields = {
     ownerFullName: document.getElementById('ownerFullName'),
     ownerMobileNumber: document.getElementById('ownerMobileNumber'),
     ownerPassword: document.getElementById('ownerPassword'),
+    ownerConfirmPassword: document.getElementById('ownerConfirmPassword'),
     contactEmail: document.getElementById('contactEmail')
 };
 
@@ -104,6 +103,7 @@ window.addEventListener('DOMContentLoaded', () => {
     fields.ownerFullName.addEventListener('input', updateWizardState);
     fields.ownerMobileNumber.addEventListener('input', updateWizardState);
     fields.ownerPassword.addEventListener('input', updateWizardState);
+    fields.ownerConfirmPassword.addEventListener('input', updateWizardState);
 
     nextToDetailsBtn.addEventListener('click', () => setWizardStep(2));
     backToConsentBtn.addEventListener('click', () => setWizardStep(1));
@@ -257,11 +257,26 @@ function updateWizardState() {
     const consentReady = policyCheckbox.checked && monitorCheckbox.checked && consentCheckbox.checked && ownerCheckbox.checked;
     const requiredFields = [
         fields.deviceName, fields.deviceModel, fields.operatingSystem,
-        fields.deviceIdentifier, fields.ownerFullName, fields.ownerMobileNumber, fields.ownerPassword
+        fields.deviceIdentifier, fields.ownerFullName, fields.ownerMobileNumber, fields.ownerPassword,
+        fields.ownerConfirmPassword
     ];
     const allRequiredFilled = requiredFields.every(input => input.value.trim().length > 0);
+    const passwordsMatch = fields.ownerPassword.value.trim() === fields.ownerConfirmPassword.value.trim();
+
+    if (fields.ownerPassword.value.trim() && fields.ownerConfirmPassword.value.trim()) {
+        if (!passwordsMatch) {
+            fields.ownerConfirmPassword.style.borderColor = 'var(--danger, #ff4444)';
+            setStatus('Passwords do not match.', '#ff4444');
+        } else {
+            fields.ownerConfirmPassword.style.borderColor = 'var(--accent, #00ff88)';
+            setStatus('Passwords match.', '#00ff88');
+        }
+    } else {
+        fields.ownerConfirmPassword.style.borderColor = '';
+    }
+
     nextToDetailsBtn.disabled = !consentReady;
-    nextToConfirmBtn.disabled = !allRequiredFilled;
+    nextToConfirmBtn.disabled = !allRequiredFilled || !passwordsMatch;
 }
 
 function setWizardStep(step) {

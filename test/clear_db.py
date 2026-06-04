@@ -13,7 +13,7 @@ if not MONGODB_URI:
 
 try:
     client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
-    db = client['gps_tracking']
+    db = client['aegistrack']
     
     # Get all collections present in the database, excluding system collections
     db_collections = db.list_collection_names()
