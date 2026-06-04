@@ -19,7 +19,7 @@ const AegisWS = (() => {
 
     function getWsUrl() {
         if (window.WS_URL) return window.WS_URL;
-        const backend = window.BACKEND_URL || `http://${window.location.hostname}:5000`;
+        const backend = window.BACKEND_URL || "https://aegistrack-backend.onrender.com";
         return backend.replace(/^http/, 'ws') + '/ws';
     }
 

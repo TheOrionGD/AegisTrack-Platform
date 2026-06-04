@@ -360,20 +360,14 @@ def get_frontend_url():
     env_frontend = os.getenv('FRONTEND_URL')
     if env_frontend:
         return env_frontend.rstrip('/')
-    host = get_public_host()
-    frontend_port = os.getenv('FRONTEND_PORT', '8000')
-    return f"http://{host}:{frontend_port}"
+    return "https://aegistrack.vercel.app"
 
 
 def get_backend_url():
     env_backend = os.getenv('BACKEND_URL')
     if env_backend:
         return env_backend.rstrip('/')
-    host = get_public_host()
-    if os.getenv('RENDER') == 'true' or 'onrender.com' in host:
-        return f"https://{host}"
-    backend_port = os.getenv('BACKEND_PORT', '5000')
-    return f"http://{host}:{backend_port}"
+    return "https://aegistrack-backend.onrender.com"
 
 
 # CYBERSECURITY: Security Headers & CORS Middleware

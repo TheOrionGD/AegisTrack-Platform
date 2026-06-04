@@ -125,7 +125,7 @@ function generateEnrollmentToken() {
 }
 
 function buildRegistrationUrl(token) {
-    return `${BACKEND_URL.replace(':5000', ':5000')}/register-device/${token}`;
+    return `${BACKEND_URL}/register-device/${token}`;
 }
 
 function buildMessage(payload) {

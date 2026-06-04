@@ -15,8 +15,7 @@ const AegisAuth = (() => {
     };
 
     function getBackendUrl() {
-        if (window.BACKEND_URL) return window.BACKEND_URL;
-        return `http://${window.location.hostname}:5000`;
+        return window.BACKEND_URL || "https://aegistrack-backend.onrender.com";
     }
 
     function getPortalBase() {

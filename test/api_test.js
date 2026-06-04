@@ -5,7 +5,7 @@
  */
 
 const TEST_CONFIG = {
-    baseUrl: 'http://localhost:5000',
+    baseUrl: 'https://aegistrack-backend.onrender.com',
     testUser: 'TEST_OP_' + Math.floor(Math.random() * 1000),
     testPass: 'SECURE_ALPHA_123',
     testDeviceId: 'DRONE_NODE_' + Math.floor(Math.random() * 100)

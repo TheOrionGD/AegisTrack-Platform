@@ -25,8 +25,8 @@ import javafx.scene.web.WebEngine;
 
 public class GPSDashboard extends Application {
 
-    private static String BACKEND_URL = "http://localhost:5000";
-    private static String FRONTEND_URL = "http://localhost:8000";
+    private static String BACKEND_URL = "https://aegistrack-backend.onrender.com";
+    private static String FRONTEND_URL = "https://aegistrack.vercel.app";
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private StackPane contentArea;

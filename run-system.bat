@@ -71,8 +71,8 @@ start "Frontend Server" cmd /k "cd /d "%~dp0frontend" && python serve.py %PORT%"
 echo Waiting 10 seconds for frontend initialization...
 timeout /t 10 /nobreak > nul
 
-REM Open browser to the new operator portal.
-start "" "http://%SYSTEM_IPV4%:%PORT%/pages/tracking-request.html"
+REM Open browser to the new landing page.
+start "" "http://%SYSTEM_IPV4%:%PORT%/landing-page.html"
 
 echo Waiting 10 seconds before launching Java Dashboard...
 timeout /t 10 /nobreak > nul
@@ -84,7 +84,7 @@ echo.
 echo =======================================================
 echo  AegisTrack SYSTEM STARTED SUCCESSFULLY
 echo =======================================================
-echo  FRONTEND ACCESS: http://%SYSTEM_IPV4%:%PORT%/pages/tracking-request.html
+echo  FRONTEND ACCESS: http://%SYSTEM_IPV4%:%PORT%/landing-page.html
 echo.
 echo  Note: Ensure your phone is on the same hotspot network if you want remote access.
 echo =======================================================
