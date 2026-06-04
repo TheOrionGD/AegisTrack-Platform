@@ -1263,21 +1263,21 @@ You can use `run-system.bat` to launch the backend, serve the frontend static fi
 
 ---
 
-## 38. Team Story: The Road to Consent-Based Telemetry
+## 38. Engineering Journey: The Story Behind AegisTrack
 
 Behind the AegisTrack platform is a collaborative journey of two developers—**Godfrey** (System Developer & Frontend Architect) and **Aravindan** (Cybersecurity Lead & Cryptographer)—who set out to answer a critical question: *How do we build a tracking system that businesses can deploy confidently, but device owners can trust completely?*
 
 ### The Challenge We Faced
 During the design phase, **Aravindan** conducted security audits of typical enterprise tracking solutions. He found that most ran as silent background daemons using static hardware identifiers (like IMEI numbers) or hardcoded credentials. Aravindan pointed out three fatal flaws in this model:
 1. **Device Spoofing**: Attackers could easily reverse-engineer the endpoints and spoof coordinates, compromising the integrity of fleet logs.
-2. **Compliance Nightmare**: Silently capturing coordinates violated GDPR Article 6 and CCPA privacy mandates, exposing companies to massive legal risks.
+2. **Compliance Risks**: Silently capturing coordinates could create significant GDPR and CCPA compliance concerns, exposing companies to massive legal risks.
 3. **No Dynamic Revocation**: Users had no active interface to temporarily suspend or permanently revoke access.
 
 Meanwhile, **Godfrey** was mapping out the user experience. He knew that for fleet tracking to be effective, enrollment had to be frictionless on mobile browsers without requiring heavy app installs, while maintaining a clear and visible "Consent Loop" that respects user sovereignty.
 
 ### How We Collaborated on Token-Based Enrollment
 To resolve these conflicting demands of security, compliance, and user experience, Godfrey and Aravindan co-engineered a **Zero-Trust Token-Based Handshake**:
-* **The Cryptographic Engine (Aravindan's Work)**: Aravindan designed the backend API so it generates a cryptographically signed, single-use, time-limited invitation token. This token acts as a secure container for tracking parameters (such as tracking purpose, duration, and target organization).
+* **The Cryptographic Engine (Aravindan's Work)**: Aravindan designed the backend API so it generates a cryptographically secure, single-use, time-limited UUIDv4 invitation token stored server-side with an associated expiration. This token acts as a secure pointer to the tracking parameters (such as tracking purpose, duration, and target organization).
 * **The Enrollment Portal (Godfrey's Work)**: Godfrey built the frontend enrollment wizard (`device-registration.html`) that parses this token in the URL. Before any telemetry begins, the user is presented with a clear layout of their rights and the purpose of tracking.
 * **Dynamic Access Keys**: Upon approval, the backend generates a random tracking API key for the device session. If the user clicks "Pause" or "Revoke" in the Device Owner Portal, Godfrey's client dispatches a signed event, and Aravindan's backend immediately destroys the key in MongoDB Atlas, dropping all future coordinates.
 
@@ -1285,7 +1285,9 @@ To resolve these conflicting demands of security, compliance, and user experienc
 Rather than hosting policies in unread, static legal PDFs, our team integrated them directly into the application's runtime using three cooperative mechanisms:
 1. **Dynamic Policy Display**: Godfrey's frontend retrieves policy values bound to the token and presents them to the user during registration, ensuring explicit, informed consent.
 2. **Owner AI Assistant**: We integrated a context-aware AI assistant. Godfrey built the query UI, while Aravindan structured the AI prompt guidelines to retrieve answers directly from our secure privacy knowledge base, allowing owners to ask questions like *"How is my location data protected?"* and get real-time answers.
-3. **Immutable Audit Logs**: Aravindan implemented symmetric Fernet encryption for system logs. Whenever an owner grants, pauses, or revokes consent, a secure entry is written to MongoDB Atlas. This provides businesses with an immutable, cryptographically verifiable audit trail of their compliance.
+3. **Cryptographically Protected Audit Logs**: Aravindan implemented symmetric Fernet encryption for system logs. Whenever an owner grants, pauses, or revokes consent, a secure entry is written to MongoDB Atlas. This provides businesses with a tamper-evident, cryptographically verifiable audit trail of their compliance.
+
+The result was AegisTrack—a consent-first telemetry platform that enables organizations to monitor authorized devices while preserving transparency, accountability, and user control.
 
 ---
 
