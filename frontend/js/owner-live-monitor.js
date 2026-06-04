@@ -125,7 +125,7 @@ function renderDeviceData(data) {
         } else {
             marker.setLatLng(pos);
         }
-        marker.bindPopup(`<strong>My Device</strong><br>Last active: ${lastSeenDate}`).openPopup();
+        marker.bindPopup(`<strong>My Device</strong><br>Last active: ${escapeHTML(lastSeenDate)}`).openPopup();
     } else {
         document.getElementById('currentCoords').textContent = 'No telemetry received';
     }
@@ -247,4 +247,18 @@ function showToast(message, type = 'info') {
         toast.classList.add('hide');
         setTimeout(() => toast.remove(), 350);
     }, 2800);
+}
+
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.toString().replace(/[&<>'"]/g, (tag) => {
+        const chars = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        };
+        return chars[tag] || tag;
+    });
 }
