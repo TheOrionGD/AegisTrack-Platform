@@ -7,37 +7,58 @@
 ## 1. Project Banner
 
 ```text
-    _                 _     _____                _      
-   / \   ___  __ _   (_)___|_   _|_ __ __ _  ___| | __  
-  / _ \ / _ \/ _` |  | / __| | | | '__/ _` |/ __| |/ /  
- / ___ \  __/ (_| |  | \__ \ | | | | | (_| | (__|   <   
-/_/   \_\___|\__, |  |_|___/ |_| |_|  \__,_|\___|_|\_\  
+    _               _     _____                _      
+   / \   ___  __ _ (_)___|_   _|_ __ __ _  ___| | __  
+  / _ \ / _ \/ _` || / __| | | | '__/ _` |/ __| |/ /  
+ / ___ \  __/ (_| || \__ \ | | | | | (_| | (__|   <   
+/_/   \_\___|\__, ||_|___/ |_| |_|  \__,_|\___|_|\_\  
              |___/                                      
 ```
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#)
-[![Version Badge](https://img.shields.io/badge/release-v2.1.0-blue.svg)](#)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](#)
-[![Security Policy](https://img.shields.io/badge/security-compliant-green.svg)](#)
-[![Snyk Security](https://img.shields.io/badge/security-Snyk%20Passed-brightgreen.svg)](#)
-[![Code Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen.svg)](#)
-[![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg)](#)
+<div align="center">
 
-[![Stars](https://img.shields.io/github/stars/OrionGD/AegisTrack.svg?style=flat&label=Stars&color=yellow)](#)
-[![Forks](https://img.shields.io/github/forks/OrionGD/AegisTrack.svg?style=flat&label=Forks&color=lightgrey)](#)
-[![Contributors](https://img.shields.io/github/contributors/OrionGD/AegisTrack.svg)](#)
-[![Last Commit](https://img.shields.io/github/last-commit/OrionGD/AegisTrack.svg)](#)
-[![Issues](https://img.shields.io/github/issues/OrionGD/AegisTrack.svg)](#)
-[![Pull Requests](https://img.shields.io/github/issues-pr/OrionGD/AegisTrack.svg)](#)
+### Project Status & Metrics
 
-[![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](#)
-[![Java Version](https://img.shields.io/badge/java-17%20%7C%2021-red.svg)](#)
-[![Vercel Deployment](https://img.shields.io/badge/frontend-vercel-blueviolet.svg)](#)
-[![Render Hosting](https://img.shields.io/badge/backend-render-orange.svg)](#)
-[![Database](https://img.shields.io/badge/database-mongodb--atlas-green.svg)](#)
-[![WebSocket](https://img.shields.io/badge/websockets-active-brightgreen.svg)](#)
-[![Platforms](https://img.shields.io/badge/platform-windows%20%7C%20linux%20%7C%20macos-lightgrey.svg)](#)
-[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](#)
+[![Release Version](https://img.shields.io/badge/release-v2.1.0-blue.svg?style=for-the-badge)](https://github.com/OrionGD/AegisTrack)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](#)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](https://github.com/OrionGD/AegisTrack/blob/main/LICENSE)
+[![Security Policy](https://img.shields.io/badge/security-compliant-green.svg?style=for-the-badge)](#)
+[![GDPR Compliance](https://img.shields.io/badge/GDPR-compliant-blue.svg?style=for-the-badge&logo=gdpr&logoColor=white)](#)
+
+[![GitHub Stars](https://img.shields.io/github/stars/OrionGD/AegisTrack?style=for-the-badge&logo=github&color=yellow)](https://github.com/OrionGD/AegisTrack/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/OrionGD/AegisTrack?style=for-the-badge&logo=github&color=lightblue)](https://github.com/OrionGD/AegisTrack/network/members)
+[![GitHub Issues](https://img.shields.io/github/issues/OrionGD/AegisTrack?style=for-the-badge&logo=github&color=red)](https://github.com/OrionGD/AegisTrack/issues)
+[![GitHub PRs](https://img.shields.io/github/issues-pr/OrionGD/AegisTrack?style=for-the-badge&logo=github&color=orange)](https://github.com/OrionGD/AegisTrack/pulls)
+[![GitHub Contributors](https://img.shields.io/github/contributors/OrionGD/AegisTrack?style=for-the-badge&logo=github&color=blueviolet)](https://github.com/OrionGD/AegisTrack/graphs/contributors)
+[![GitHub Repo Size](https://img.shields.io/github/repo-size/OrionGD/AegisTrack?style=for-the-badge&logo=github)](https://github.com/OrionGD/AegisTrack)
+
+### Technology Stack
+
+**Frontend**
+
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)](https://leafletjs.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
+
+**Backend & Database**
+
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![WebSockets](https://img.shields.io/badge/WebSockets-010101?style=for-the-badge&logo=socket.io&logoColor=white)](#)
+[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)](#)
+[![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com/)
+[![Gunicorn](https://img.shields.io/badge/Gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white)](https://gunicorn.org/)
+
+**Desktop Dashboard**
+
+[![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![JavaFX](https://img.shields.io/badge/JavaFX-FF0000?style=for-the-badge&logo=java&logoColor=white)](#)
+[![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)](https://maven.apache.org/)
+
+</div>
 
 ---
 
