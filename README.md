@@ -1,8 +1,3 @@
-# AegisTrack
-
-### *Consent-Based Device Monitoring, Communication & Multi-Device Management Platform*
-
----
 
 ## 1. Project Banner
 
@@ -14,7 +9,7 @@
 /_/   \_\___|\__, ||_|___/ |_| |_|  \__,_|\___|_|\_\  
              |___/                                      
 ```
-
+### Consent-Based Device Monitoring, Communication & Multi-Device Management Platform
 <div align="center">
 
 ### Project Status & Metrics
