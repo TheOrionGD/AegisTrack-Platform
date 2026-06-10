@@ -36,6 +36,23 @@
     --detail-w:      320px;
 }
 
+:root[data-theme="light"], html[data-theme="light"] {
+    color-scheme: light;
+    --bg-base: #f0f4f8;
+    --bg-panel: rgba(255,255,255,0.85);
+    --bg-card: rgba(255,255,255,0.92);
+    --bg-hover: #e6eef7;
+    --border: rgba(0,140,200,0.18);
+    --border-light: rgba(0,140,200,0.08);
+    --cyan: #0088cc;
+    --cyan-glow: rgba(0,136,204,0.15);
+    --green: #009955;
+    --green-glow: rgba(0,153,85,0.15);
+    --text-primary: #0d1b2a;
+    --text-sec: #4a6080;
+    --text-muted: #6b7b8d;
+}
+
 html, body {
     height: 100%;
     overflow: hidden;

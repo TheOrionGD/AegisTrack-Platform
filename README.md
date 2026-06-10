@@ -81,6 +81,7 @@ AegisTrack addresses these industrial bottlenecks by establishing an integrated,
 * **Separation of Concerns**: Four distinct, customized user interfaces (Landing Page, Unified Auth Gateway, Operator Console, and Device Owner Portal) ensure that actors interact only with relevant, authorized views and datasets.
 * **Synchronized WebSockets**: Real-time communication pipelines bind spatial coordinates, geofencing breaches, and interactive chats into a single event-driven UI, eliminating message latency.
 * **User Sovereignty Controls**: The Device Owner Portal provides instant controls allowing users to pause, resume, or permanently revoke tracking, automatically destroying device-specific tracking tokens and secrets.
+* **Adaptive Theme System**: Built-in dark/light mode toggle persisted to local storage, enabling users to customize their interface while maintaining consistent design tokens across all portals.
 
 ---
 
@@ -96,13 +97,16 @@ Leverages high-accuracy GPS geolocation APIs via active client watch streams. Te
 Enables users to register and manage multiple devices (e.g., primary smartphones, secondary logistics tablets, fleet vehicle units) under a single owner account, controlling tracking states individually for each device.
 
 ### Role-Based Access Control (RBAC)
-Enforces strict server-side access control using cryptographically signed JSON Web Tokens (JWT). All REST APIs and WebSockets check permissions to segregate Operator actions from Owner controls.
+Enforces strict server-side access control using cryptographically signed JSON Web Tokens (JWT). All REST APIs and WebSockets check permissions to segregate Operator actions from Owner controls. Origin-based CORS validation ensures that only authorized frontend domains can access the backend API.
+
+### Adaptive Theme System
+Built-in dark/light mode toggle accessible from every portal. Theme preference is persisted to browser local storage and synchronized across all sessions. CSS custom properties (`--bg`, `--text`, `--accent`, etc.) adapt globally, providing WCAG-compliant contrast ratios in both modes.
 
 ### Operator Portal
-A feature-rich command desk containing metric KPI panels, invite wizards, active tracking lists, real-time alerts, interactive Leaflet maps with custom canvas markers, and communication sidebars.
+A feature-rich command desk containing metric KPI panels, invite wizards, active tracking lists, real-time alerts, interactive Leaflet maps with custom canvas markers, and communication sidebars. Fully responsive with dark/light theme support.
 
 ### Device Owner Portal
-A mobile-first, responsive control panel showing the current tracking status (Active, Paused, or Revoked), active coordinates, connected operator details, and instant pause/resume tracking triggers.
+A mobile-first, responsive control panel showing the current tracking status (Active, Paused, or Revoked), active coordinates, connected operator details, and instant pause/resume tracking triggers. Theme-aware UI adapts to user preference.
 
 ### Real-Time Communication
 An integrated WebSockets chat tool. It features typing indicators, message histories, status badges, and browser-level notification overlays to keep field agents and command desks aligned.
@@ -114,7 +118,7 @@ Integrated context-aware natural language interfaces. The Owner AI resolves priv
 Allows operators to configure circular boundaries directly on map interfaces. The backend coordinates-matching engine tracks boundary crossings and triggers immediate alerts.
 
 ### Security & Audit Logging
-Enforces PBKDF2 password hashing, secure rate-limiting on endpoints, input validation, and symmetrical encryption (Fernet) for storing sensitive system logs in MongoDB Atlas.
+Enforces PBKDF2 password hashing, secure rate-limiting on endpoints, input validation, and symmetrical encryption (Fernet) for storing sensitive system logs in MongoDB Atlas. Origin-based CORS headers prevent unauthorized cross-origin requests.
 
 ---
 
@@ -210,7 +214,9 @@ The AegisTrack platform leverages a modern, decoupled, and secure technology sta
 * **Mapping Engine**: [Leaflet.js](https://leafletjs.com/) for interactive, lightweight canvas-based map rendering, utilizing custom map markers and vector layers.
 * **Map Tile Provider**: CartoDB Dark Matter tile set for a premium, dark-mode visual interface.
 * **WebSocket Integration**: Native Browser WebSockets API (`AegisWS`) with custom reconnect handling and message queuing.
-* **Layout & Responsiveness**: Vanilla CSS Grid & Flexbox, built with a mobile-first design system utilizing HSL-based color tokens.
+* **Layout & Responsiveness**: Vanilla CSS Grid & Flexbox, built with a mobile-first design system utilizing CSS custom properties for both dark and light themes.
+* **Theme System**: Centralized dark/light mode using `:root[data-theme="light"]` and `:root[data-theme="dark"]` CSS selectors. Runtime theme toggle persisted via `localStorage` and exposed via `window.AegisTheme` API.
+* **Environment Configuration**: Backend URL resolved at runtime from `.env` variables, supporting separate development and production endpoints. Automatic fallback to `http://localhost:5000` for local development.
 * **Hosting**: Vercel for fast, static edge distribution.
 
 #### Backend (Server-Side)
@@ -220,6 +226,7 @@ The AegisTrack platform leverages a modern, decoupled, and secure technology sta
 * **Real-time Engine**: [Flask-Sock](https://github.com/mgood/flask-sock) for lightweight, standard-compliant WebSocket server connections.
 * **Security & Tokens**: [Flask-JWT-Extended](https://flask-jwt-extended.readthedocs.io/) for cryptographically signed access and refresh token management.
 * **Rate Limiting**: [Flask-Limiter](https://flask-limiter.readthedocs.io/) to prevent brute-force attacks and abuse on sensitive auth and ingestion endpoints.
+* **CORS Management**: Origin-based CORS validation using environment variables. Dynamically builds allowed origins from `FRONTEND_URL`, `DEV_FRONTEND_URL`, and hardcoded localhost entries. Rejects requests from unauthorized origins with proper `Access-Control-Allow-Origin` headers.
 
 #### Database (Data Layer)
 * **Database Engine**: [MongoDB Atlas](https://www.mongodb.com/atlas/database) for scalable document storage and high-throughput write performance of geolocation coordinates.
@@ -1173,90 +1180,109 @@ backend/
 
 Create a `.env` file in the `backend/` directory to configure the application.
 
-| Variable Name | Description | Default Value | Production Value |
-| :--- | :--- | :--- | :--- |
-| `MONGODB_URI` | MongoDB connection URI | `mongodb://localhost:27017/aegis` | `mongodb+srv://<user>:<password>@cluster0.mongodb.net/...` |
-| `JWT_SECRET_KEY` | Hex key for signing session tokens | `super-secret-key-1234` | `4f3a7c8e9b0d...` (Unique 32-byte hex string) |
-| `OPERATOR_USERNAME` | Default operator username | `admin` | `operator@aegistrack.com` |
-| `OPERATOR_PASSWORD` | Default operator password | `admin123` | `OperatorSecurePassword2026!` |
-| `FRONTEND_URL` | Frontend URL | `http://localhost:8000` | `https://aegistrack-frontend.vercel.app` |
-| `BACKEND_URL` | Backend URL | `http://localhost:5000` | `https://aegistrack-backend.onrender.com` |
+| Variable Name | Description |
+| :--- | :--- |
+| `MONGODB_URI` | MongoDB connection string (local or MongoDB Atlas) |
+| `JWT_SECRET_KEY` | Unique 32-byte hex string for signing session tokens |
+| `OPERATOR_USERNAME` | Default operator username (e.g., `oriongd@aegistrack.com`) |
+| `OPERATOR_PASSWORD` | Default operator password |
+| `FRONTEND_URL` | Production frontend URL (e.g., `https://aegistrack-platform.vercel.app`) |
+| `BACKEND_URL` | Production backend URL (e.g., `https://aegistrack-platform.onrender.com`) |
+| `DEV_FRONTEND_URL` | Development frontend URL (e.g., `http://localhost:8000`) |
+| `DEV_BACKEND_URL` | Development backend URL (e.g., `http://localhost:5000`) |
+| `GROQ_API_KEY` | Groq AI API key for the assistant feature (optional) |
 
 ---
 
 ## 36. Running the Application
 
 ### 1. Database Configuration
-Ensure MongoDB is running locally, or configure a connection string in the `.env` file for a MongoDB Atlas cluster.
+Ensure MongoDB is running locally, or configure a connection string in the `.env` file for a MongoDB Atlas cluster. The example `.env` uses MongoDB Atlas with credentials already configured.
 
-### 2. Start the Backend API
+### 2. Configure Environment Variables
+Ensure your `.env` file in the `backend/` directory contains:
+```dotenv
+MONGODB_URI=mongodb://...
+JWT_SECRET_KEY=...
+OPERATOR_USERNAME=oriongd@aegistrack.com
+OPERATOR_PASSWORD=OrionGD
+DEV_FRONTEND_URL=http://localhost:8000
+DEV_BACKEND_URL=http://localhost:5000
+FRONTEND_URL=https://aegistrack-platform.vercel.app
+BACKEND_URL=https://aegistrack-platform.onrender.com
+GROQ_API_KEY=...
+```
+
+### 3. Start the Backend API
 Navigate to the backend directory and run the Flask server:
 ```bash
 cd backend
 python app.py
 ```
-The backend runs at `http://localhost:5000` by default.
+The backend will automatically:
+- Load environment variables from `.env`
+- Build allowed CORS origins from `FRONTEND_URL`, `DEV_FRONTEND_URL`, and localhost entries
+- Run at `http://localhost:5000` in development mode
 
-### 3. Start the Frontend
+### 4. Start the Frontend
 Navigate to the frontend directory and start the static file server:
 ```bash
 cd frontend
 python serve.py 8000
 ```
+The frontend will automatically:
+- Load the backend URL from configuration (defaults to `http://localhost:5000` when served from localhost)
+- Initialize the theme system from `localStorage` (defaults to dark mode)
+- Expose the theme API via `window.AegisTheme`
+
 Open `http://localhost:8000` in your web browser.
+
+### 5. Using the Theme System
+Toggle theme at runtime using the `window.AegisTheme` API:
+```javascript
+window.AegisTheme.setTheme('light');   // Switch to light mode
+window.AegisTheme.toggleTheme();        // Toggle between light and dark
+window.AegisTheme.getTheme();           // Get current theme
+```
 
 ---
 
-## 37. Deployment Guide
+## 37. Core Use Cases
 
-### Local Deployment
-You can use `run-system.bat` to launch the backend, serve the frontend static files locally, and open the interface in your default browser.
+AegisTrack is designed for organizations that require transparent, consent-based tracking with robust security and compliance. Key use cases include:
 
-### Render Deployment (Backend & WebSockets)
-1. Log in to Render and create a new **Web Service**.
-2. Connect your Git repository.
-3. Configure the service settings:
-   * **Runtime**: `Python 3`
-   * **Build Command**: `pip install -r backend/requirements.txt`
-   * **Start Command**: `gunicorn -k gevent -w 1 --threads 100 backend.app:app`
-4. Add your environment variables in the Render dashboard.
+### 1. **Fleet Logistics & Transportation**
+Organizations managing delivery fleets, courier services, and field operations can track vehicle and personnel locations in real-time while ensuring drivers maintain full consent control. Operators create time-limited tracking invitations, and drivers accept terms before coordinates are transmitted. Drivers can pause tracking during personal time or revoke consent immediately.
 
-### Vercel Deployment (Frontend)
-1. Install the Vercel CLI or log in to the Vercel dashboard.
-2. Link your project repository.
-3. Set the root directory of the deployment to `frontend/`.
-4. Deploy the project. Vercel will configure routing based on `frontend/vercel.json`.
+### 2. **High-Value Asset Protection**
+For valuable cargo transit, equipment movement, or secure courier services, AegisTrack provides continuous location monitoring with geofence boundaries. Alerts trigger instantly when assets leave designated zones, and comprehensive audit logs document every tracking session for regulatory compliance.
 
-### VPS Deployment (Ubuntu/Nginx)
-1. Clone the repository to your VPS.
-2. Set up a systemd service to run the Flask application:
-   ```ini
-   [Unit]
-   Description=Gunicorn instance to serve AegisTrack backend
-   After=network.target
+### 3. **Field Team Coordination**
+Organizations with distributed field agents (service technicians, inspectors, security personnel) benefit from unified command dashboards showing real-time team locations, integrated messaging for coordination, and dynamic consent management. Each team member controls their own tracking status independently.
 
-   [Service]
-   User=www-data
-   WorkingDirectory=/var/www/AegisTrack/backend
-   Environment="PATH=/var/www/AegisTrack/backend/venv/bin"
-   ExecStart=/var/www/AegisTrack/backend/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5000 backend.app:app
+### 4. **Enterprise Asset Management**
+Multi-device tracking for employees managing multiple devices (smartphones, tablets, company vehicles) under a single account. Each device's tracking consent is independently manageable, supporting BYOD (Bring Your Own Device) policies while maintaining security.
 
-   [Install]
-   WantedBy=multi-user.target
-   ```
-3. Configure Nginx as a reverse proxy:
-   ```nginx
-   server {
-       listen 80;
-       server_name api.aegistrack.com;
+### 5. **Regulatory Compliance & Audit Trails**
+Organizations in regulated industries (transportation, logistics, healthcare) can demonstrate GDPR, CCPA, and regional privacy compliance through:
+- Explicit consent verification with time-stamped acceptance records
+- Cryptographically protected audit logs of all tracking lifecycle events
+- Device owner control over pause/resume/revoke states with instant verification
+- Transparent policy display at registration time
 
-       location / {
-           proxy_pass http://127.0.0.1:5000;
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-       }
-   }
-   ```
+### 6. **Geofence-Based Operations**
+Construction sites, delivery zones, secure facilities, and outdoor operations leverage interactive map-based geofence configuration with instant breach alerts. Operators define circular boundaries directly on the map interface, and the system continuously validates device coordinates against configured zones.
+
+### 7. **AI-Assisted Fleet Intelligence**
+Operators query fleet status using natural language (e.g., "Show me all offline devices" or "Summarize geofence breaches in the last hour"), while device owners ask privacy questions ("How is my data encrypted?") and receive real-time answers from the knowledge base.
+
+### **Industry Verticals**
+- **Logistics & Last-Mile Delivery**: Track couriers and packages with driver consent
+- **Construction & Field Services**: Monitor equipment and personnel on job sites
+- **Transportation & Fleet Ops**: Manage vehicle fleets with transparent tracking
+- **Enterprise Security**: Coordinate security team movements with full audit trails
+- **Healthcare & Mobile Care**: Track field nurses and ambulances with privacy preservation
+- **Insurance & Risk Management**: Verify fleet compliance and audit tracking records
 
 ---
 
@@ -1472,23 +1498,57 @@ Yes. Modern web browsers require a secure HTTPS connection to use location APIs.
 
 ## 49. Troubleshooting Guide
 
-#### 1. WebSocket connection errors
-Ensure the server is running and check that the WebSocket URL in your settings is correct.
+#### 1. WebSocket connection errors (HTTP 500)
+Ensure the server is running and check that the WebSocket URL in your settings is correct. Verify CORS origins are configured in backend `.env` file.
 
-#### 2. Location permissions denied
-Verify that location services are enabled on your device and check browser site settings.
+#### 2. CORS preflight request blocked (No 'Access-Control-Allow-Origin' header)
+The backend's `get_allowed_frontend_origins()` function builds origins from `FRONTEND_URL`, `DEV_FRONTEND_URL`, and hardcoded localhost entries. Verify your frontend URL is in the `.env` file or matches one of the allowed localhost addresses.
 
-#### 3. Database connection failure
-Ensure the backend server is allowed to access your MongoDB Atlas instance by checking your database access rules.
+#### 3. Location permissions denied
+Verify that location services are enabled on your device and check browser site settings. Note that geolocation requires HTTPS in production (localhost HTTP is allowed for development).
 
-#### 4. Token expired
-If an invitation token has expired, contact the operator to generate a new invitation link.
+#### 4. Database connection failure
+Ensure the backend server is allowed to access your MongoDB Atlas instance by checking your database access rules. If using local MongoDB, ensure the `mongod` service is running.
 
 #### 5. Route redirects to login page
-If your session has expired, clear your browser cache and log back in to renew your token.
+If your session has expired, clear your browser cache and log back in to renew your token. The frontend's `config.js` loads theme and backend configuration on window load.
+
+#### 6. Backend URL incorrect in frontend
+The frontend automatically detects the backend URL:
+- **Development**: If served from `localhost:8000`, defaults to `http://localhost:5000`
+- **Production**: Uses `BACKEND_URL` from your `.env` file or hardcoded Render URL
+You can override this by setting `window.BACKEND_URL` before loading scripts.
+
+#### 7. Theme not persisting
+Ensure your browser allows `localStorage` access. Check browser console for `localStorage.setItem()` errors. The theme key is `theme` and valid values are `'dark'` or `'light'`.
+
+#### 8. Login fails with wrong credentials
+Verify the operator username and password in your `.env` file match the credentials you're using. On first run, the backend auto-initializes with `OPERATOR_USERNAME` and `OPERATOR_PASSWORD`.
 
 ---
 
-## 50. Conclusion
+## 50. Current System Status (as of June 10, 2026)
 
-AegisTrack is a consent-based device monitoring solution designed for modern regulatory standards. By combining role-based access control, real-time mapping, and dynamic user consent, the platform provides security and asset tracking while respecting user privacy.
+### ✅ Completed Features
+- Dark/Light theme system with CSS custom properties and localStorage persistence
+- Environment-driven URL configuration supporting development and production deployments
+- Origin-based CORS validation for secure cross-origin requests
+- Dynamic allowed origins built from `.env` variables
+- Theme API exposed via `window.AegisTheme` for runtime control
+- Fixed CSS import paths to use root-absolute URLs (`/assets/css/design-system.css`)
+- Comprehensive `.gitignore` with security-sensitive file patterns
+- Local development environment on `localhost:8000` (frontend) and `localhost:5000` (backend)
+- MongoDB Atlas integration with fallback to local MongoDB
+
+### 🔄 In Progress / Future Enhancements
+- Native mobile application wrapping with Capacitor
+- Advanced analytics and route history visualization
+- Predictive tracking using ML models
+- Enterprise SSO/SAML authentication
+- Background geolocation for iOS/Android
+
+---
+
+## 51. Conclusion
+
+AegisTrack is a consent-based device monitoring solution designed for modern regulatory standards. By combining role-based access control, real-time mapping, dynamic user consent, and adaptive theming, the platform provides security and asset tracking while respecting user privacy. The system supports both local development and production deployments through environment-driven configuration, ensuring flexibility across deployment targets.

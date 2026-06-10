@@ -54,7 +54,21 @@ limiter = Limiter(
 def exempt_options():
     return request.method == "OPTIONS"
 
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*", "allow_headers": "*", "methods": "*"}}) 
+def get_allowed_frontend_origins():
+    origins = []
+    env_frontend = os.getenv('FRONTEND_URL')
+    env_dev_frontend = os.getenv('DEV_FRONTEND_URL')
+    if env_frontend:
+        origins.append(env_frontend.rstrip('/'))
+    if env_dev_frontend:
+        origins.append(env_dev_frontend.rstrip('/'))
+    origins.extend([
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+    ])
+    return list(dict.fromkeys(origins))
+
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": get_allowed_frontend_origins(), "allow_headers": "*", "methods": "*"}})
 jwt = JWTManager(app)
 
 @jwt.additional_claims_loader
@@ -358,13 +372,26 @@ def get_public_host():
 
 def get_frontend_url():
     env_frontend = os.getenv('FRONTEND_URL')
+    env_dev_frontend = os.getenv('DEV_FRONTEND_URL')
+    req_host = request.host.split(':')[0]
+    if req_host in ("localhost", "127.0.0.1"):
+        if env_dev_frontend:
+            return env_dev_frontend.rstrip('/')
+        return f"http://{request.host}"
     if env_frontend:
         return env_frontend.rstrip('/')
-    return "https://aegistrack.vercel.app"
+    return "https://aegistrack-platform.vercel.app"
 
 
 def get_backend_url():
     env_backend = os.getenv('BACKEND_URL')
+    env_dev_backend = os.getenv('DEV_BACKEND_URL')
+    req_host = request.host.split(':')[0]
+    if req_host in ("localhost", "127.0.0.1"):
+        if env_dev_backend:
+            return env_dev_backend.rstrip('/')
+        scheme = 'https' if request.is_secure else 'http'
+        return f"{scheme}://{request.host}"
     if env_backend:
         return env_backend.rstrip('/')
     return "https://aegistrack-backend.onrender.com"
@@ -374,7 +401,12 @@ def get_backend_url():
 @app.after_request
 def add_security_headers(response):
     # Fix CORS preflight issue: Explicitly allow headers
-    response.headers['Access-Control-Allow-Origin'] = '*'
+    origin = request.headers.get('Origin')
+    allowed_origins = get_allowed_frontend_origins()
+    if origin and origin in allowed_origins:
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Vary'] = 'Origin'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-API-KEY'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PUT, DELETE'
     

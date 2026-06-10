@@ -105,6 +105,45 @@
     --topbar-height:    56px;
     --bottom-nav-height: 64px;
     --content-max:      1280px;
+
+    /* Theme aliases */
+    --bg: var(--bg-base);
+    --card-bg: var(--bg-surface);
+    --border-color: var(--border-soft);
+    --text: var(--text-primary);
+    --muted: var(--text-secondary);
+    --accent: var(--accent-green);
+    --accent-secondary: var(--accent-cyan);
+}
+
+:root[data-theme="light"], html[data-theme="light"] {
+    color-scheme: light;
+
+    --bg-base: #f0f4f8;
+    --bg-surface: rgba(255,255,255,0.85);
+    --bg-elevated: rgba(255,255,255,0.95);
+    --bg-overlay: rgba(255, 255, 255, 0.75);
+
+    --accent-green: #009955;
+    --accent-cyan: #0088cc;
+    --accent-green-dim: rgba(0, 153, 85, 0.08);
+    --accent-cyan-dim: rgba(0, 136, 204, 0.08);
+    --accent-green-glow: rgba(0, 153, 85, 0.15);
+    --accent-cyan-glow: rgba(0, 136, 204, 0.15);
+
+    --text-primary: #0d1b2a;
+    --text-secondary: #4a6080;
+    --text-muted: #647a94;
+    --text-inverse: #081018;
+
+    --border-subtle: rgba(0, 140, 200, 0.08);
+    --border-soft: rgba(0, 140, 200, 0.18);
+    --border-medium: rgba(0, 140, 200, 0.24);
+    --border-accent: rgba(0, 136, 204, 0.25);
+    --border-green: rgba(0, 153, 85, 0.24);
+
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 140, 200, 0.12);
 }
 
 /* ─── RESET & BASE ──────────────────────────────────────────── */

@@ -2,8 +2,8 @@
  * AegisTrack Owner Portal CSS
  * Mobile-first design for device owners.
  */
-@import url('../assets/css/design-system.css');
-@import url('../assets/css/shared-nav.css');
+@import url('/assets/css/design-system.css');
+@import url('shared-nav.css');
 
 /* ─── DEVICE STATUS HERO ────────────────────────────────────── */
 .device-hero {

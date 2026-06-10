@@ -1,7 +1,7 @@
 /**
  * AegisTrack Auth Pages CSS
  */
-@import url('../assets/css/design-system.css');
+@import url('/assets/css/design-system.css');
 
 .auth-body {
     background: var(--bg-base);

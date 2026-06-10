@@ -2,7 +2,7 @@
  * AegisTrack Shared Navigation
  * Operator sidebar, shared topbar, owner bottom nav, mobile overlays.
  */
-@import url('../css/design-system.css');
+@import url('/assets/css/design-system.css');
 
 /* ─── OPERATOR SIDEBAR ──────────────────────────────────────── */
 .op-shell {

@@ -2,8 +2,8 @@
  * AegisTrack Operator Portal CSS
  * Compact KPI cards, tables, communications layout, geofence, AI chat.
  */
-@import url('../assets/css/design-system.css');
-@import url('../assets/css/shared-nav.css');
+@import url('/assets/css/design-system.css');
+@import url('shared-nav.css');
 
 /* ─── KPI GRID ──────────────────────────────────────────────── */
 .kpi-grid {

@@ -1,0 +1,8 @@
+{
+  "name": "aegistrack-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AegisTrack frontend static assets",
+  "author": "AegisTrack",
+  "license": "MIT"
+}
