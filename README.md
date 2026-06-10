@@ -15,14 +15,7 @@
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](#)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](https://github.com/OrionGD/AegisTrack/blob/main/LICENSE)
 [![Security Policy](https://img.shields.io/badge/security-compliant-green.svg?style=for-the-badge)](#)
-[![GDPR Compliance](https://img.shields.io/badge/GDPR-compliant-blue.svg?style=for-the-badge&logo=gdpr&logoColor=white)](#)
-
-[![GitHub Stars](https://img.shields.io/github/stars/OrionGD/AegisTrack?style=for-the-badge&logo=github&color=yellow)](https://github.com/OrionGD/AegisTrack/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/OrionGD/AegisTrack?style=for-the-badge&logo=github&color=lightblue)](https://github.com/OrionGD/AegisTrack/network/members)
-[![GitHub Issues](https://img.shields.io/github/issues/OrionGD/AegisTrack?style=for-the-badge&logo=github&color=red)](https://github.com/OrionGD/AegisTrack/issues)
-[![GitHub PRs](https://img.shields.io/github/issues-pr/OrionGD/AegisTrack?style=for-the-badge&logo=github&color=orange)](https://github.com/OrionGD/AegisTrack/pulls)
-[![GitHub Contributors](https://img.shields.io/github/contributors/OrionGD/AegisTrack?style=for-the-badge&logo=github&color=blueviolet)](https://github.com/OrionGD/AegisTrack/graphs/contributors)
-[![GitHub Repo Size](https://img.shields.io/github/repo-size/OrionGD/AegisTrack?style=for-the-badge&logo=github)](https://github.com/OrionGD/AegisTrack)
+[![GDPR Compliance](https://img.shields.io/badge/GDPR-compliant-blue.svg?style=for-the-badge)](#)
 
 ### Technology Stack
 
