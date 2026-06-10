@@ -44,7 +44,7 @@
 [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)](https://maven.apache.org/)
 
 </div>
-
+<img src="image.png" alt="Image">
 ---
 
 ## 2. Executive Summary
